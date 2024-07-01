@@ -1,16 +1,20 @@
 #import "AppDelegate.h"
-
 #import <React/RCTBundleURLProvider.h>
+#import <Firebase.h> // Add this line if Firebase is used
 
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   self.moduleName = @"PdfPlus";
-  // You can add your custom initial props in the dictionary below.
-  // They will be passed down to the ViewController used by React Native.
-  self.initialProps = @{};
-
+  self.initialProps = @{};  // Initial props for React Native
+  
+  // Call Firebase configure method here
+  if ([FIRApp defaultApp] == nil) {
+    [FIRApp configure];
+  }
+  
+  // Return the result of super's didFinishLaunchingWithOptions
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 

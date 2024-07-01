@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "257843038415",
+    "project_id": "pdfplus-72170",
+    "storage_bucket": "pdfplus-72170.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:257843038415:android:2794ab602468683d20cfba",
+        "android_client_info": {
+          "package_name": "com.pdfplus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBc4KacdA0-mm0tfwuvSJ-kF0-V5x1j8-Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
