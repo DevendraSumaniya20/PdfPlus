@@ -7,4 +7,5 @@ export default {
   MYPDFSCREEN: 'MyPdfScreen',
   BOTTOMTABNAVIGATION: 'BottomTabNavigation',
   DRAWERNAVIGATION: 'DrawerNavigation',
+  BOTHSTACKNAVIGATION: 'BothStackNavigation',
 };

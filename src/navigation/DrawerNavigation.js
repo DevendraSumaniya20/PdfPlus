@@ -1,27 +1,26 @@
-import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import navigationString from '../constants/navigationString';
-import HomeScreen from '../screens/HomeScreen/HomeScreen';
+import BottomTabNavigation from './BottomTabNavigation';
 import DiscoverScreen from '../screens/DiscoverScreen/DiscoverScreen';
 import MyPdfScreen from '../screens/MyPdfScreen/MyPdfScreen';
 import MyPdfSavedScreen from '../screens/MyPdfSavedScreen/MyPdfSavedScreen';
+
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Octicons from 'react-native-vector-icons/Octicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const Drawer = createDrawerNavigator();
+
 const DrawerNavigation = () => {
   return (
-    <Drawer.Navigator>
+    <Drawer.Navigator screenOptions={{}}>
       <Drawer.Screen
-        name={navigationString.HOMESCREEN}
-        component={HomeScreen}
+        name={navigationString.BOTTOMTABNAVIGATION}
+        component={BottomTabNavigation}
         options={{
-          drawerLabel: 'Home',
           headerShown: false,
-
+          drawerLabel: 'Home',
           drawerIcon: ({color}) => (
             <MaterialIcons name="home" color={color} size={24} />
           ),
