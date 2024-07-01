@@ -5,4 +5,6 @@ export default {
   DISCOVERSCREEN: 'DiscoverScreen',
   MYPDFSAVEDSCREEN: 'MyPdfSavedScreen',
   MYPDFSCREEN: 'MyPdfScreen',
+  BOTTOMTABNAVIGATION: 'BottomTabNavigation',
+  DRAWERNAVIGATION: 'DrawerNavigation',
 };
