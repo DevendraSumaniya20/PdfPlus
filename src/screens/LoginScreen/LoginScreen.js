@@ -13,7 +13,7 @@ const LoginScreen = () => {
   return (
     <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
       <View style={styles.bubblesContainer}>
-        {[...Array(50)].map((_, index) => (
+        {[...Array(10)].map((_, index) => (
           <Bubble key={index} index={index} />
         ))}
       </View>
