@@ -1,14 +1,7 @@
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  TouchableOpacity,
-} from 'react-native';
-import React from 'react';
+import {StyleSheet, TextInput, View, TouchableOpacity} from 'react-native';
+import React, {useState} from 'react';
 import {moderateScale, scale} from 'react-native-size-matters';
 import CustomIcon from './CustomIcon';
-import Color from '../constants/Color';
 import CustomTheme from '../constants/CustomTheme';
 
 const CustomInput = ({
@@ -21,10 +14,19 @@ const CustomInput = ({
   autoFocus,
   placeholderTextColor,
 }) => {
-  const {darkmodeColor, darkBorderColor, darkBackgroundColor} = CustomTheme();
+  const [borderColor, setBorderColor] = useState('#AAA');
+  const {darkmodeColor} = CustomTheme();
+
+  const handleFocus = () => {
+    setBorderColor('#03fcc2');
+  };
+
+  const handleBlur = () => {
+    setBorderColor('#AAA');
+  };
 
   return (
-    <View style={[styles.textInput, {borderColor: darkBorderColor}]}>
+    <View style={[styles.textInput, {borderColor: borderColor}]}>
       <TextInput
         placeholder={placeholder}
         style={[styles.inputStyle, inputStyle, {color: darkmodeColor}]}
@@ -35,6 +37,8 @@ const CustomInput = ({
         autoComplete="off"
         autoCorrect={false}
         placeholderTextColor={placeholderTextColor}
+        onFocus={handleFocus}
+        onBlur={handleBlur}
       />
       {!!rightIcon && (
         <View style={styles.rightIconContainer}>
@@ -54,10 +58,8 @@ const styles = StyleSheet.create({
     padding: moderateScale(12),
     fontSize: scale(14),
     height: moderateScale(52),
-    fontFamily: 'Rubik-Regular',
-    fontWeight: '400',
-    fontStyle: 'normal',
-    lineHeight: 21,
+    fontFamily: 'Poppins',
+    fontWeight: '600',
   },
   textInput: {
     flexDirection: 'row',

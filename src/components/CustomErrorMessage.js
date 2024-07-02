@@ -20,7 +20,8 @@ const styles = StyleSheet.create({
   },
   errorTextStyle: {
     color: Color.RED,
-    fontSize: scale(14),
     fontWeight: '400',
+    fontSize: scale(14),
+    fontFamily: 'Poppins',
   },
 });

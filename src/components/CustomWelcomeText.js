@@ -19,7 +19,6 @@ const CustomWelcomeText = ({
       <Text
         style={[
           styles.textStyle,
-
           inlineStyle,
           {
             lineHeight: lineHeight,
@@ -43,5 +42,9 @@ const styles = StyleSheet.create({
   welcomeTextView: {
     alignItems: 'center',
   },
-  textStyle: {},
+  textStyle: {
+    fontSize: scale(16),
+    fontFamily: 'Poppins',
+    fontWeight: '800',
+  },
 });

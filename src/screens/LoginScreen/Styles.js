@@ -1,5 +1,3 @@
-// Styles.js
-
 import {StyleSheet} from 'react-native';
 import {
   moderateScale,
@@ -52,21 +50,21 @@ const styles = StyleSheet.create({
   forgotPasswordView: {
     alignItems: 'flex-end',
     justifyContent: 'flex-end',
-    marginTop: moderateVerticalScale(2),
   },
 
   forgotPasswordTextStyle: {
+    fontFamily: 'Poppins',
+    fontWeight: '600',
     fontSize: scale(14),
-    fontWeight: '500',
   },
   SignUpView: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   signUpTextStyle: {
-    fontSize: scale(14),
-    // fontWeight: '500',
-    fontFamily: 'NanumGothic-Bold',
+    fontSize: scale(16),
+    fontFamily: 'Poppins',
+    fontWeight: '900',
   },
 });
 

@@ -9,7 +9,11 @@ import Bubble from '../../animation/Bubble';
 import CustomErrorMessage from '../../components/CustomErrorMessage';
 import {useDispatch, useSelector} from 'react-redux';
 import {setEmail, setPassword} from '../../redux/slices/authSlice';
-import {moderateScale, moderateVerticalScale} from 'react-native-size-matters';
+import {
+  moderateScale,
+  moderateVerticalScale,
+  scale,
+} from 'react-native-size-matters';
 import navigationString from '../../constants/navigationString';
 import {useNavigation} from '@react-navigation/native';
 import CustomWelcomeText from '../../components/CustomWelcomeText';
@@ -75,7 +79,11 @@ const LoginScreen = () => {
         <View style={styles.marginContainer}>
           <View style={styles.imageView}>
             <Image
-              source={ImagePath.LOGO}
+              source={
+                darkmodeColor == '#000'
+                  ? ImagePath.LOGOBLACK
+                  : ImagePath.LOGOWHITE
+              }
               resizeMethod="auto"
               resizeMode="center"
               style={styles.image}
@@ -85,6 +93,9 @@ const LoginScreen = () => {
             <CustomWelcomeText
               text={'Log in'}
               inlineStyle={{color: darkmodeColor}}
+              fontFamily="Poppins"
+              fontSize={scale(24)}
+              fontWeight="900"
             />
           </View>
 

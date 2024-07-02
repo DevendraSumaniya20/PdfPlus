@@ -46,7 +46,8 @@ const styles = StyleSheet.create({
   },
   textStyle: {
     fontSize: scale(16),
-    fontWeight: '600',
+    fontFamily: 'Poppins',
+    fontWeight: '800',
     textAlign: 'center',
   },
 });

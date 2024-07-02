@@ -1,3 +1,4 @@
 export default {
-  LOGO: require('../assets/images/logo.png'),
+  LOGOBLACK: require('../assets/images/logoNormal.png'),
+  LOGOWHITE: require('../assets/images/logoWhite.png'),
 };
