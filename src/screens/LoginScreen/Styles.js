@@ -1,7 +1,11 @@
 // Styles.js
 
 import {StyleSheet} from 'react-native';
-import {moderateScale, moderateVerticalScale} from 'react-native-size-matters';
+import {
+  moderateScale,
+  moderateVerticalScale,
+  scale,
+} from 'react-native-size-matters';
 
 const styles = StyleSheet.create({
   container: {
@@ -17,6 +21,19 @@ const styles = StyleSheet.create({
   marginContainer: {
     marginHorizontal: moderateScale(16),
   },
+  welcomeTextView: {
+    marginVertical: moderateVerticalScale(16),
+  },
+  imageView: {
+    alignItems: 'center',
+    marginTop: moderateScale(52),
+    marginHorizontal: moderateScale(16),
+    marginBottom: moderateVerticalScale(16),
+  },
+  image: {
+    width: moderateScale(343),
+    height: moderateScale(253),
+  },
   inputView: {
     marginVertical: moderateVerticalScale(8),
     alignItems: 'center',
@@ -31,6 +48,25 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
+  },
+  forgotPasswordView: {
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+    marginTop: moderateVerticalScale(2),
+  },
+
+  forgotPasswordTextStyle: {
+    fontSize: scale(14),
+    fontWeight: '500',
+  },
+  SignUpView: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signUpTextStyle: {
+    fontSize: scale(14),
+    // fontWeight: '500',
+    fontFamily: 'NanumGothic-Bold',
   },
 });
 

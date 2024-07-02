@@ -22,12 +22,11 @@ const Bubble = ({index}) => {
   const color = useSharedValue(
     `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(
       Math.random() * 256,
-    )}, ${Math.floor(Math.random() * 256)}, 0.5)`,
+    )}, ${Math.floor(Math.random() * 256)}, 1)`,
   );
 
-  const size = Math.floor(Math.random() * 44) + 10;
+  const size = Math.floor(Math.random() * 44) + 40;
 
-  // Randomly position bubbles around the edges
   const startPositionX =
     Math.random() < 0.5
       ? Math.random() * width
