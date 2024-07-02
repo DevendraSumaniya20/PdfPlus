@@ -64,6 +64,7 @@ const LoginScreen = () => {
     }
 
     if (!emailError && !passwordError) {
+      navigation.navigate(navigationString.DRAWERNAVIGATION);
     }
   };
 

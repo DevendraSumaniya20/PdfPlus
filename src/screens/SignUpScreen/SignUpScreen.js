@@ -83,6 +83,7 @@ const SignUpScreen = () => {
     }
 
     if (!nameError && !emailError && !passwordError && !confirmPasswordError) {
+      navigation.navigate(navigationString.DRAWERNAVIGATION);
     }
   };
 

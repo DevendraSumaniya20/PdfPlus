@@ -14,12 +14,12 @@ const Navigation = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
         <Stack.Screen
-          name={navigationString.LOGINSCREEN}
-          component={LoginScreen}
-        />
-        <Stack.Screen
           name={navigationString.DRAWERNAVIGATION}
           component={DrawerNavigation}
+        />
+        <Stack.Screen
+          name={navigationString.LOGINSCREEN}
+          component={LoginScreen}
         />
         <Stack.Screen
           name={navigationString.SIGNUPSCREEN}
