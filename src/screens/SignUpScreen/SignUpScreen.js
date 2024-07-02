@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Image, Text, TouchableOpacity, View} from 'react-native';
+import {Image, SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
 
 import CustomTextInput from '../../components/CustomTextInput';
 import CustomButton from '../../components/CustomButton';
@@ -96,7 +96,8 @@ const SignUpScreen = () => {
       }}
       scrollEnabled={true}
       showsVerticalScrollIndicator={false}>
-      <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
+      <SafeAreaView
+        style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
         <View style={styles.bubblesContainer}>
           {[...Array(10)].map((_, index) => (
             <Bubble key={index} index={index} />
@@ -239,7 +240,7 @@ const SignUpScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+      </SafeAreaView>
     </KeyboardAwareScrollView>
   );
 };

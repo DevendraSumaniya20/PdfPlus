@@ -11,22 +11,27 @@ const CustomHeader = ({
   inlineStyle,
 }) => {
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={onPress}
-        activeOpacity={0.5}>
-        <CustomIcon
-          name={iconName}
-          size={size}
-          color={color}
-          inlineStyle={inlineStyle}
-        />
-      </TouchableOpacity>
-      <View style={{width: '100%'}}>
-        <Text style={styles.headerTextTitle}>{text}</Text>
+    <TouchableOpacity
+      style={styles.button}
+      onPress={onPress}
+      activeOpacity={0.5}>
+      <View style={styles.container}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={onPress}
+          activeOpacity={0.5}>
+          <CustomIcon
+            name={iconName}
+            size={size}
+            color={color}
+            inlineStyle={inlineStyle}
+          />
+        </TouchableOpacity>
+        <View style={{width: '100%'}}>
+          <Text style={styles.headerTextTitle}>{text}</Text>
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -40,7 +45,7 @@ const styles = StyleSheet.create({
     padding: moderateScale(6),
   },
   button: {
-    width: moderateScale(52),
+    width: moderateScale(60),
     height: moderateScale(60),
     alignItems: 'center',
     justifyContent: 'center',
