@@ -95,7 +95,7 @@ const LoginScreen = () => {
               inlineStyle={{color: darkmodeColor}}
               fontFamily="Poppins"
               fontSize={scale(24)}
-              fontWeight="900"
+              fontWeight="700"
             />
           </View>
 

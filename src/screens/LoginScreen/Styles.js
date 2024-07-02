@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   signUpTextStyle: {
     fontSize: scale(16),
     fontFamily: 'Poppins',
-    fontWeight: '900',
+    fontWeight: '700',
   },
 });
 

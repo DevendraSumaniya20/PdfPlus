@@ -40,8 +40,8 @@ const styles = StyleSheet.create({
     padding: moderateScale(6),
   },
   button: {
-    width: moderateScale(48),
-    height: moderateScale(48),
+    width: moderateScale(52),
+    height: moderateScale(60),
     alignItems: 'center',
     justifyContent: 'center',
   },
