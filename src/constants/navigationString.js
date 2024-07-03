@@ -9,4 +9,11 @@ export default {
   BOTTOMTABNAVIGATION: 'BottomTabNavigation',
   DRAWERNAVIGATION: 'DrawerNavigation',
   BOTHSTACKNAVIGATION: 'BothStackNavigation',
+  COURSESCREEN: 'CourseScreen',
+  SYLLABUSSCREEN: 'SyllabusScreen',
+  BOOKSCREEN: 'BookScreen',
+  PAPERSOLUTIONSCREEN: 'PaperSolutionScreen',
+  OLDPAPERSCREEN: 'OldPaperScreen',
+  IMPMATERIALSCREEN: 'ImpMaterialScreen',
+  PDFVIEWERSCREEN: 'PdfViewerScreen',
 };

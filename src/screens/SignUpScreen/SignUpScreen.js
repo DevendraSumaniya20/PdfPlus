@@ -31,6 +31,7 @@ const SignUpScreen = () => {
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
+
   const {darkmodeColor, darkBackgroundColor} = CustomTheme();
 
   const navigation = useNavigation();

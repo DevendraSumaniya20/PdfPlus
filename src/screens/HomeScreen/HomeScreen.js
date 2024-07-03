@@ -3,7 +3,6 @@ import {
   Text,
   View,
   Image,
-  Button,
   SafeAreaView,
   FlatList,
   TouchableOpacity,
@@ -15,29 +14,44 @@ import {
   scale,
 } from 'react-native-size-matters';
 import CustomTheme from '../../constants/CustomTheme';
+import CustomIcon from '../../components/CustomIcon';
+import {useNavigation} from '@react-navigation/native';
+import navigationString from '../../constants/navigationString';
 
 const HomeScreen = () => {
   const [greeting, setGreeting] = useState('');
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
-  keyExtractor = (item, index) => index.toString();
+
+  const keyExtractor = item => item.id.toString();
+  const navigation = useNavigation();
 
   const data = [
-    {id: '1', text: 'Card 1'},
-    {id: '2', text: 'Card 2'},
-    {id: '3', text: 'Card 3'},
-    {id: '4', text: 'Card 4'},
-    {id: '5', text: 'Card 5'},
-    {id: '6', text: 'Card 6'},
-    {id: '7', text: 'Card 7'},
+    {id: '1', text: 'Computer Engineering'},
+    {id: '2', text: 'Electronics & Communication Engineering'},
+    {id: '3', text: 'Mechanical Engineering'},
+    {id: '4', text: 'Civil Engineering'},
+    {id: '5', text: 'Automobile Engineering'},
+    {id: '6', text: 'Electrical Engineering'},
+    {id: '7', text: 'Information and Technology Engineering'},
+    {id: '8', text: 'Other Subjects'},
   ];
 
   const renderItem = ({item}) => (
-    <View style={styles.card}>
-      <TouchableOpacity onPress={() => {}}>
-        <Text style={styles.cardText}>{item.text}</Text>
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity
+      onPress={() => {
+        navigation.navigate(navigationString.COURSESCREEN, {item});
+      }}
+      style={[
+        styles.card,
+        {backgroundColor: darkBackgroundColor, borderColor: darkBorderColor},
+      ]}>
+      <View>
+        <Text style={[styles.cardText, {color: darkmodeColor}]}>
+          {item.text}
+        </Text>
+      </View>
+    </TouchableOpacity>
   );
 
   useEffect(() => {
@@ -67,13 +81,18 @@ const HomeScreen = () => {
             style={styles.profileImage}
           />
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>UserName</Text>
-            <Text style={styles.greeting}>{greeting}</Text>
+            <Text style={[styles.userName, {color: darkmodeColor}]}>
+              UserName
+            </Text>
+            <Text style={[styles.greeting, {color: darkmodeColor}]}>
+              {greeting}
+            </Text>
           </View>
-          <Button title="Mic" onPress={() => {}} style={styles.micButton} />
+
+          <CustomIcon color={darkmodeColor} name={'book'} size={scale(24)} />
         </View>
         <View style={[styles.nextView, {backgroundColor: darkBackgroundColor}]}>
-          <Text style={styles.text}>
+          <Text style={[styles.text, {color: darkmodeColor}]}>
             This is some text that will span over three lines to give an example
             of how the layout will look.
           </Text>
@@ -81,9 +100,9 @@ const HomeScreen = () => {
         <View>
           <FlatList
             data={data}
-            numColumns={3}
+            numColumns={2}
             renderItem={renderItem}
-            keyExtractor={this.keyExtractor}
+            keyExtractor={keyExtractor}
           />
         </View>
       </SafeAreaView>
@@ -133,16 +152,18 @@ const styles = StyleSheet.create({
     lineHeight: 24,
   },
   card: {
-    backgroundColor: '#4CAF50', // Change this to your desired color
-    padding: 20,
-    marginVertical: 10,
-    marginHorizontal: 20,
-    borderRadius: 10,
+    flex: 1,
+    padding: moderateScale(16),
+    marginVertical: moderateVerticalScale(8),
+    marginHorizontal: moderateScale(8),
+    borderRadius: moderateScale(8),
     alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
   },
   cardText: {
-    color: '#fff',
-    fontSize: 18,
+    fontSize: scale(14),
+    textAlign: 'center',
   },
 });
 
