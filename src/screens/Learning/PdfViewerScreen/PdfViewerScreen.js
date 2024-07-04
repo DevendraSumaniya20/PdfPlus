@@ -1,55 +1,68 @@
 import React, {useState, useRef} from 'react';
-import {StyleSheet, View, Alert, TouchableOpacity, Text} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Alert,
+  TouchableOpacity,
+  Text,
+  SafeAreaView,
+  Modal,
+  TouchableHighlight,
+  TextInput,
+  Share,
+} from 'react-native';
 import Pdf from 'react-native-pdf';
-import RNFS from 'react-native-fs';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import CustomIcon from '../../../components/CustomIcon';
 import CustomTheme from '../../../constants/CustomTheme';
 import {scale} from 'react-native-size-matters';
+import RNFS from 'react-native-fs';
 
 const PdfViewerScreen = ({route}) => {
-  const {filePath} = route.params;
-  const pdfRef = useRef(null);
-
-  const {darkmodeColor, darkBackgroundColor} = CustomTheme();
-
   const [numberOfPages, setNumberOfPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [zoom, setZoom] = useState(1.0);
-  const [horizontal, setHorizontal] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [goToPageModalVisible, setGoToPageModalVisible] = useState(false);
+  const [pageInput, setPageInput] = useState('');
 
-  const storeDownloadedPdfPath = async path => {
+  const {filePath} = route.params;
+  const {darkmodeColor, darkBackgroundColor} = CustomTheme();
+
+  const pdfRef = useRef(null);
+
+  const handleDownload = async () => {
+    const fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
+    const destPath = `${RNFS.DocumentDirectoryPath}/${fileName}`;
+
     try {
-      await AsyncStorage.setItem('downloadedPdfPath', path);
-    } catch (error) {
-      console.log('Error storing the PDF path:', error);
-    }
-  };
+      const exists = await RNFS.exists(destPath);
+      if (exists) {
+        Alert.alert(
+          'File already downloaded',
+          'The file is already downloaded.',
+        );
+        return;
+      }
 
-  const downloadPdf = async () => {
-    try {
-      const downloadDest = `${RNFS.DocumentDirectoryPath}/downloaded-file.pdf`;
-
-      const options = {
+      const downloadOptions = {
         fromUrl: filePath,
-        toFile: downloadDest,
+        toFile: destPath,
       };
 
-      const result = await RNFS.downloadFile(options).promise;
-      if (result.statusCode === 200) {
-        await storeDownloadedPdfPath(downloadDest);
-        Alert.alert('Download Complete', `File downloaded to: ${downloadDest}`);
-        console.log(`File downloaded to: ${downloadDest}`);
+      const downloadResult = await RNFS.downloadFile(downloadOptions).promise;
+      if (downloadResult.statusCode === 200) {
+        console.log('Download complete');
+        Alert.alert(
+          'Download complete',
+          'Pdf downloaded successfully! Click to view',
+        );
       } else {
-        Alert.alert('Download Failed', 'Failed to download file');
-        console.log('Download failed', result);
+        console.error('Download failed');
+        Alert.alert('Download failed', 'Failed to download the PDF.');
       }
     } catch (error) {
-      console.log('Download error:', error);
-      Alert.alert(
-        'Download Error',
-        'An error occurred while downloading the file',
-      );
+      console.error('Download error:', error);
+      Alert.alert('Download error', 'Failed to download the PDF.');
     }
   };
 
@@ -64,39 +77,74 @@ const PdfViewerScreen = ({route}) => {
         },
         {
           text: 'OK',
-          onPress: () => downloadPdf(),
+          onPress: handleDownload,
         },
       ],
       {cancelable: false},
     );
   };
 
-  const toggleOrientation = () => {
-    setHorizontal(prevHorizontal => !prevHorizontal);
+  const zoomIn = () => {
+    setZoom(zoom + 0.5);
+  };
+
+  const zoomOut = () => {
+    if (zoom > 0.5) {
+      setZoom(zoom - 0.5);
+    }
+  };
+
+  const goToPage = () => {
+    const pageNum = parseInt(pageInput);
+    if (pageNum > 0 && pageNum <= numberOfPages) {
+      pdfRef.current.setPage(pageNum);
+      setGoToPageModalVisible(false);
+      setPageInput('');
+    } else {
+      Alert.alert('Invalid Page', 'Please enter a valid page number.');
+    }
+  };
+
+  const sharePdf = async () => {
+    try {
+      await Share.share({
+        url: `file://${filePath}`,
+        title: 'Share PDF',
+      });
+    } catch (error) {
+      console.error('Error sharing PDF:', error);
+    }
+  };
+
+  const handleMenuPress = () => {
+    setModalVisible(true);
   };
 
   return (
-    <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
+    <SafeAreaView
+      style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
       <View style={styles.toolbar}>
-        <TouchableOpacity onPress={confirmDownload}>
+        <TouchableOpacity onPress={zoomOut}>
           <CustomIcon
-            type="MaterialIcons"
             color={darkmodeColor}
-            name={'file-download'}
-            size={scale(24)}
+            name={'zoom-out'}
+            size={scale(16)}
+            type="MaterialIcons"
           />
         </TouchableOpacity>
-        <Text style={{color: darkmodeColor}}>
-          Page: {currentPage} / {numberOfPages}
-        </Text>
-        <Text style={{color: darkmodeColor}}>
-          Zoom: {(zoom * 100).toFixed(0)}%
-        </Text>
-        <TouchableOpacity onPress={toggleOrientation}>
+        <TouchableOpacity onPress={zoomIn}>
           <CustomIcon
-            type="MaterialIcons"
             color={darkmodeColor}
-            name={horizontal ? 'swap-vert' : 'swap-horiz'}
+            name={'zoom-in'}
+            size={scale(16)}
+            type="MaterialIcons"
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleMenuPress}>
+          <CustomIcon
+            type="MaterialCommunityIcons"
+            color={darkmodeColor}
+            name={'dots-vertical'}
             size={scale(24)}
           />
         </TouchableOpacity>
@@ -104,25 +152,98 @@ const PdfViewerScreen = ({route}) => {
       <Pdf
         ref={pdfRef}
         source={{uri: filePath}}
-        onLoadComplete={(numberOfPages, filePath) => {
+        onLoadComplete={numberOfPages => {
           setNumberOfPages(numberOfPages);
-          console.log(`Number of pages: ${numberOfPages}, ${filePath}`);
+          console.log(`Number of pages: ${numberOfPages}`);
         }}
-        onPageChanged={(page, numberOfPages) => {
+        onPageChanged={page => {
           setCurrentPage(page);
           console.log(`Current page: ${page}`);
         }}
         onError={error => {
-          console.log(error);
+          console.log('Error while loading PDF:', error);
+          Alert.alert('Error', 'Failed to load PDF.');
         }}
         onPressLink={uri => {
           console.log(`Link pressed: ${uri}`);
         }}
-        horizontal={horizontal}
         scale={zoom}
         style={styles.pdf}
       />
-    </View>
+      <View style={styles.footer}>
+        <Text style={{color: darkmodeColor}}>
+          Page {currentPage} of {numberOfPages}
+        </Text>
+      </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible || goToPageModalVisible}
+        onRequestClose={() => {
+          setModalVisible(false);
+          setGoToPageModalVisible(false);
+        }}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <TouchableHighlight
+              style={{...styles.openButton, backgroundColor: '#2196F3'}}
+              onPress={confirmDownload}>
+              <Text style={[styles.textStyle, {color: darkmodeColor}]}>
+                Download PDF
+              </Text>
+            </TouchableHighlight>
+            <TouchableHighlight
+              style={{...styles.openButton, backgroundColor: '#FF6347'}}
+              onPress={sharePdf}>
+              <Text style={[styles.textStyle, {color: darkmodeColor}]}>
+                Share PDF
+              </Text>
+            </TouchableHighlight>
+            <TouchableHighlight
+              style={{...styles.openButton, backgroundColor: '#1E90FF'}}
+              onPress={() => setGoToPageModalVisible(true)}>
+              <Text style={[styles.textStyle, {color: darkmodeColor}]}>
+                Go to Page
+              </Text>
+            </TouchableHighlight>
+            <TouchableHighlight
+              style={{...styles.openButton, backgroundColor: '#f194ff'}}
+              onPress={() => {
+                setModalVisible(false);
+                setGoToPageModalVisible(false);
+              }}>
+              <Text style={[styles.textStyle, {color: darkmodeColor}]}>
+                Close Menu
+              </Text>
+            </TouchableHighlight>
+            {goToPageModalVisible && (
+              <View style={styles.modalView}>
+                <Text style={styles.modalText}>Go to Page</Text>
+                <TextInput
+                  style={styles.input}
+                  keyboardType="numeric"
+                  onChangeText={text => setPageInput(text)}
+                  value={pageInput}
+                />
+                <TouchableHighlight
+                  style={{...styles.openButton, backgroundColor: '#1E90FF'}}
+                  onPress={goToPage}>
+                  <Text style={styles.textStyle}>Go</Text>
+                </TouchableHighlight>
+                <TouchableHighlight
+                  style={{...styles.openButton, backgroundColor: '#f194ff'}}
+                  onPress={() => {
+                    setGoToPageModalVisible(false);
+                  }}>
+                  <Text style={styles.textStyle}>Cancel</Text>
+                </TouchableHighlight>
+              </View>
+            )}
+          </View>
+        </View>
+      </Modal>
+    </SafeAreaView>
   );
 };
 
@@ -142,5 +263,40 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
+  },
+  footer: {
+    padding: 10,
+    alignItems: 'center',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  openButton: {
+    backgroundColor: '#F194FF',
+    borderRadius: 20,
+    padding: 10,
+    elevation: 2,
+    marginVertical: 10,
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  input: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    width: 100,
+    textAlign: 'center',
   },
 });

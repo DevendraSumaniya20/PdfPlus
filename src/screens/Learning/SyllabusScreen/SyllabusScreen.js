@@ -27,7 +27,7 @@ const SyllabusScreen = ({route}) => {
       subjectName: 'Basic Electrical Engineering',
       known_as: 'BEE',
       pdfUrl:
-        'https://www.w3.org/WAI/WCAG21/working-examples/pdf-table/table.pdf',
+        'https://www.forteachersforstudents.com.au/site/wp-content/uploads/KidsMedia/RemembranceDay/pdfs/remembrance-day-facts.pdf',
       downloaded: false,
     },
   ]);
@@ -63,13 +63,7 @@ const SyllabusScreen = ({route}) => {
         'Download Error',
         `An error occurred while downloading the file: ${error.message}`,
       );
-      console.log(error.message);
     }
-  };
-
-  const handlePress = (pdfUrl, fileName, itemId) => {
-    downloadPdf(pdfUrl, fileName, itemId);
-    console.log(pdfUrl);
   };
 
   const renderItem = ({item}) => (
@@ -77,7 +71,7 @@ const SyllabusScreen = ({route}) => {
       <View style={styles.item}>
         <Text
           onPress={() =>
-            handlePress(item.pdfUrl, `${item.known_as}.pdf`, item.id)
+            downloadPdf(item.pdfUrl, `${item.known_as}.pdf`, item.id)
           }
           style={[styles.cell, {color: darkmodeColor}]}>
           {item.code}
@@ -92,7 +86,7 @@ const SyllabusScreen = ({route}) => {
       <TouchableOpacity
         style={styles.downloadButton}
         onPress={() =>
-          handlePress(item.pdfUrl, `${item.known_as}.pdf`, item.id)
+          downloadPdf(item.pdfUrl, `${item.known_as}.pdf`, item.id)
         }>
         <CustomIcon
           type="Ionicons"
