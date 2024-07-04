@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,7 +7,6 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React from 'react';
 import {
   moderateScale,
   moderateVerticalScale,
@@ -15,22 +15,19 @@ import {
 import CustomTheme from '../../../constants/CustomTheme';
 import {useNavigation} from '@react-navigation/native';
 import navigationString from '../../../constants/navigationString';
+import CustomIcon from '../../../components/CustomIcon';
 
 const CourseScreen = ({route}) => {
   const {item} = route.params;
-  console.log(item);
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
 
-  const keyExtractor = item => item.id.toString();
-  const navigation = useNavigation();
-
   const data = [
-    {id: '1', text: 'Syllabus'},
-    {id: '2', text: 'Books'},
-    {id: '3', text: 'Old Paper'},
-    {id: '4', text: 'IMP Materials'},
-    {id: '5', text: 'Paper Solution'},
+    {id: '1', text: 'Syllabus', icon: 'book'},
+    {id: '2', text: 'Books', icon: 'book-open'},
+    {id: '3', text: 'Old Paper', icon: 'file-text'},
+    {id: '4', text: 'IMP Materials', icon: 'file'},
+    {id: '5', text: 'Paper Solution', icon: 'edit'},
   ];
 
   const screenMapping = {
@@ -40,6 +37,10 @@ const CourseScreen = ({route}) => {
     4: navigationString.IMPMATERIALSCREEN,
     5: navigationString.PAPERSOLUTIONSCREEN,
   };
+
+  const navigation = useNavigation();
+
+  const keyExtractor = item => item.id.toString();
 
   const renderItem = ({item}) => (
     <TouchableOpacity
@@ -53,7 +54,15 @@ const CourseScreen = ({route}) => {
         styles.card,
         {backgroundColor: darkBackgroundColor, borderColor: darkBorderColor},
       ]}>
-      <View>
+      <View style={styles.cardContent}>
+        <View style={styles.iconContainer}>
+          <CustomIcon
+            color={darkmodeColor}
+            name={item.icon}
+            size={scale(16)}
+            type="Feather"
+          />
+        </View>
         <Text style={[styles.cardText, {color: darkmodeColor}]}>
           {item.text}
         </Text>
@@ -62,44 +71,45 @@ const CourseScreen = ({route}) => {
   );
 
   return (
-    <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
-      <SafeAreaView style={styles.marginContainer}>
+    <SafeAreaView
+      style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
+      <View style={styles.marginContainer}>
         <View style={[styles.nextView, {backgroundColor: darkBackgroundColor}]}>
           <Text style={[styles.text, {color: darkmodeColor}]}>
             This is some text that will span over three lines to give an example
             of how the layout will look.
           </Text>
         </View>
-        <View>
-          <FlatList
-            data={data}
-            numColumns={2}
-            renderItem={renderItem}
-            keyExtractor={keyExtractor}
-          />
-        </View>
-      </SafeAreaView>
-    </View>
+        <FlatList
+          data={data}
+          renderItem={renderItem}
+          keyExtractor={keyExtractor}
+          contentContainerStyle={styles.flatListContainer}
+        />
+      </View>
+    </SafeAreaView>
   );
 };
 
 export default CourseScreen;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
   marginContainer: {
     marginHorizontal: moderateScale(16),
+    paddingTop: moderateScale(16),
   },
-
   nextView: {
     padding: moderateScale(16),
     borderRadius: moderateScale(8),
+    marginBottom: moderateScale(16),
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   text: {
     fontSize: scale(16),
-    lineHeight: 24,
+    lineHeight: moderateScale(24),
   },
   card: {
     flex: 1,
@@ -107,21 +117,28 @@ const styles = StyleSheet.create({
     marginVertical: moderateVerticalScale(8),
     marginHorizontal: moderateScale(8),
     borderRadius: moderateScale(8),
-    alignItems: 'center',
-    justifyContent: 'center',
     borderWidth: 1,
-    shadowColor: '#ff5201',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 9,
+      height: 3,
     },
-    shadowOpacity: 0.5,
-    shadowRadius: 12.35,
-
-    elevation: 19,
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 6,
+  },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: moderateScale(16),
+  },
+  iconContainer: {
+    marginRight: moderateScale(8),
   },
   cardText: {
     fontSize: scale(14),
-    textAlign: 'center',
+  },
+  flatListContainer: {
+    flexGrow: 1,
   },
 });
