@@ -126,8 +126,8 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    padding: moderateScale(16),
-    marginVertical: moderateVerticalScale(8),
+    padding: moderateScale(12),
+    marginVertical: moderateVerticalScale(12),
     marginHorizontal: moderateScale(8),
     borderRadius: moderateScale(8),
     borderWidth: 1,
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: moderateScale(16),
   },
   iconContainer: {
-    marginRight: moderateScale(8),
+    width: moderateScale(28),
   },
   cardText: {
     fontSize: scale(14),
