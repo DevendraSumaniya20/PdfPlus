@@ -16,6 +16,7 @@ import CustomTheme from '../../../constants/CustomTheme';
 import {useNavigation} from '@react-navigation/native';
 import navigationString from '../../../constants/navigationString';
 import CustomIcon from '../../../components/CustomIcon';
+import CustomHeader from '../../../components/CustomHeader';
 
 const CourseScreen = ({route}) => {
   const {item} = route.params;
@@ -52,7 +53,11 @@ const CourseScreen = ({route}) => {
       }}
       style={[
         styles.card,
-        {backgroundColor: darkBackgroundColor, borderColor: darkBorderColor},
+        {
+          backgroundColor: darkBackgroundColor,
+          borderColor: darkBorderColor,
+          shadowColor: darkmodeColor,
+        },
       ]}>
       <View style={styles.cardContent}>
         <View style={styles.iconContainer}>
@@ -74,6 +79,14 @@ const CourseScreen = ({route}) => {
     <SafeAreaView
       style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
       <View style={styles.marginContainer}>
+        <CustomHeader
+          text={item.text}
+          iconName={'chevron-back'}
+          color={darkmodeColor}
+          onPress={() => {
+            navigation.goBack();
+          }}
+        />
         <View style={[styles.nextView, {backgroundColor: darkBackgroundColor}]}>
           <Text style={[styles.text, {color: darkmodeColor}]}>
             This is some text that will span over three lines to give an example

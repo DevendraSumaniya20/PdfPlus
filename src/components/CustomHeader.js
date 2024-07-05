@@ -2,6 +2,8 @@ import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import React from 'react';
 import {moderateScale, scale} from 'react-native-size-matters';
 import CustomIcon from './CustomIcon';
+import CustomTheme from '../constants/CustomTheme';
+
 const CustomHeader = ({
   text,
   iconName,
@@ -10,28 +12,27 @@ const CustomHeader = ({
   onPress,
   inlineStyle,
 }) => {
+  const {darkmodeColor, darkBackgroundColor} = CustomTheme();
+
   return (
-    <TouchableOpacity
-      style={styles.button}
-      onPress={onPress}
-      activeOpacity={0.5}>
-      <View style={styles.container}>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={onPress}
-          activeOpacity={0.5}>
+    <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
+      <TouchableOpacity
+        style={[styles.button, {backgroundColor: darkBackgroundColor}]}
+        onPress={onPress}
+        activeOpacity={0.5}>
+        <View style={styles.iconContainer}>
           <CustomIcon
             name={iconName}
             size={size}
-            color={color}
+            color={darkmodeColor}
             inlineStyle={inlineStyle}
           />
-        </TouchableOpacity>
-        <View style={{width: '100%'}}>
-          <Text style={styles.headerTextTitle}>{text}</Text>
         </View>
-      </View>
-    </TouchableOpacity>
+        <Text style={[styles.headerTextTitle, {color: darkmodeColor}]}>
+          {text}
+        </Text>
+      </TouchableOpacity>
+    </View>
   );
 };
 
@@ -41,21 +42,20 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
     padding: moderateScale(6),
   },
   button: {
-    width: moderateScale(60),
-    height: moderateScale(60),
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTextTitle: {
-    fontFamily: 'Rubik-Bold',
     fontWeight: '500',
     textAlign: 'center',
-    fontSize: scale(24),
-    lineHeight: 32,
-    letterSpacing: -0.5,
+    fontSize: scale(18),
+    flex: 1,
   },
 });

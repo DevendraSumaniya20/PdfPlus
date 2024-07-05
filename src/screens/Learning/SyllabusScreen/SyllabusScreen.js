@@ -15,6 +15,7 @@ import CustomIcon from '../../../components/CustomIcon';
 import RNFS from 'react-native-fs';
 import {useNavigation} from '@react-navigation/native';
 import navigationString from '../../../constants/navigationString';
+import CustomHeader from '../../../components/CustomHeader';
 
 const SyllabusScreen = ({route}) => {
   const navigation = useNavigation();
@@ -101,6 +102,14 @@ const SyllabusScreen = ({route}) => {
   return (
     <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
       <SafeAreaView style={styles.safeArea}>
+        <CustomHeader
+          text={'Syllabus'}
+          iconName={'chevron-back'}
+          color={darkmodeColor}
+          onPress={() => {
+            navigation.goBack();
+          }}
+        />
         <View style={styles.headerContainer}>
           <View
             style={[styles.headerRow, {borderBottomColor: darkBorderColor}]}>
