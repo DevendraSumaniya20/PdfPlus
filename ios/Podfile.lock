@@ -1263,7 +1263,7 @@ PODS:
     - TOCropViewController (~> 2.7.4)
   - RNPermissions (4.1.5):
     - React-Core
-  - RNReanimated (3.12.1):
+  - RNReanimated (3.13.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1643,7 +1643,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: 5538c370587d7e757667b9283ca867dd7635f154
   RNImageCropPicker: 771e2ca319d2cf92e04ebf334ece892ee9a6728f
   RNPermissions: 294531ede5a64d1528463e88fffef05675842042
-  RNReanimated: be44c56aefb04cd83dfe6dcfaff5b909ef627a1d
+  RNReanimated: 308bcd09703f16e26367dfd0c2bba43fc296aa47
   RNScreens: fd2722bcc59f36a629205af8cc7b48e4bc0d09f5
   RNShare: 0fad69ae2d71de9d1f7b9a43acf876886a6cb99c
   RNVectorIcons: 7ac7aaa83f8f3d4c7c0f7daea5a431e91a29b0cd
