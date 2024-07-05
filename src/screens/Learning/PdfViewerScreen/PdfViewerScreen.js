@@ -5,11 +5,10 @@ import {
   Text,
   SafeAreaView,
   Modal,
-  TouchableHighlight,
+  TouchableOpacity,
   TextInput,
   Share,
   ActivityIndicator,
-  TouchableOpacity,
   Alert,
 } from 'react-native';
 import Pdf from 'react-native-pdf';
@@ -28,7 +27,7 @@ const PdfViewerScreen = ({route, navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [goToPageModalVisible, setGoToPageModalVisible] = useState(false);
   const [pageInput, setPageInput] = useState('');
-  const [isLoading, setIsLoading] = useState(true); // Track PDF loading state
+  const [isLoading, setIsLoading] = useState(true);
 
   const {filePath} = route.params;
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
@@ -112,7 +111,8 @@ const PdfViewerScreen = ({route, navigation}) => {
   };
 
   const handleMenuPress = () => {
-    setModalVisible(true);
+    setModalVisible(!modalVisible);
+    setGoToPageModalVisible(false);
   };
 
   return (
@@ -194,11 +194,10 @@ const PdfViewerScreen = ({route, navigation}) => {
             style={[
               styles.modalView,
               {
-                backgroundColor: darkBackgroundColor,
-                borderColor: darkmodeColor,
+                borderColor: darkBorderColor,
               },
             ]}>
-            <TouchableHighlight
+            <TouchableOpacity
               style={[
                 styles.openButton,
                 {backgroundColor: darkBackgroundColor},
@@ -207,8 +206,8 @@ const PdfViewerScreen = ({route, navigation}) => {
               <Text style={[styles.textStyle, {color: darkmodeColor}]}>
                 Download PDF
               </Text>
-            </TouchableHighlight>
-            <TouchableHighlight
+            </TouchableOpacity>
+            <TouchableOpacity
               style={[
                 styles.openButton,
                 {backgroundColor: darkBackgroundColor},
@@ -217,8 +216,8 @@ const PdfViewerScreen = ({route, navigation}) => {
               <Text style={[styles.textStyle, {color: darkmodeColor}]}>
                 Share PDF
               </Text>
-            </TouchableHighlight>
-            <TouchableHighlight
+            </TouchableOpacity>
+            <TouchableOpacity
               style={[
                 styles.openButton,
                 {backgroundColor: darkBackgroundColor},
@@ -227,8 +226,8 @@ const PdfViewerScreen = ({route, navigation}) => {
               <Text style={[styles.textStyle, {color: darkmodeColor}]}>
                 Go to Page
               </Text>
-            </TouchableHighlight>
-            <TouchableHighlight
+            </TouchableOpacity>
+            <TouchableOpacity
               style={[
                 styles.openButton,
                 {backgroundColor: darkBackgroundColor},
@@ -238,9 +237,9 @@ const PdfViewerScreen = ({route, navigation}) => {
                 setGoToPageModalVisible(false);
               }}>
               <Text style={[styles.textStyle, {color: darkmodeColor}]}>
-                Close Menu
+                Close
               </Text>
-            </TouchableHighlight>
+            </TouchableOpacity>
             {goToPageModalVisible && (
               <View
                 style={[
@@ -259,7 +258,7 @@ const PdfViewerScreen = ({route, navigation}) => {
                   onChangeText={text => setPageInput(text)}
                   value={pageInput}
                 />
-                <TouchableHighlight
+                <TouchableOpacity
                   style={[
                     styles.openButton,
                     {backgroundColor: darkBackgroundColor},
@@ -268,8 +267,8 @@ const PdfViewerScreen = ({route, navigation}) => {
                   <Text style={[styles.textStyle, {color: darkmodeColor}]}>
                     Go
                   </Text>
-                </TouchableHighlight>
-                <TouchableHighlight
+                </TouchableOpacity>
+                <TouchableOpacity
                   style={[
                     styles.openButton,
                     {
@@ -283,7 +282,7 @@ const PdfViewerScreen = ({route, navigation}) => {
                   <Text style={[styles.textStyle, {color: darkmodeColor}]}>
                     Cancel
                   </Text>
-                </TouchableHighlight>
+                </TouchableOpacity>
               </View>
             )}
           </View>
@@ -327,18 +326,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: moderateVerticalScale(21),
   },
-  modalView: {
-    margin: moderateScale(20),
-    alignItems: 'center',
-  },
+
   openButton: {
     borderRadius: moderateScale(20),
-    padding: moderateScale(10),
+    padding: moderateScale(8),
     marginVertical: moderateVerticalScale(10),
     minWidth: moderateScale(180),
     alignItems: 'center',
+    borderWidth: 1,
   },
   textStyle: {
     fontWeight: 'bold',
