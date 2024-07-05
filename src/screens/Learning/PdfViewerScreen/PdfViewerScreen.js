@@ -2,31 +2,36 @@ import React, {useState, useRef} from 'react';
 import {
   StyleSheet,
   View,
-  Alert,
-  TouchableOpacity,
   Text,
   SafeAreaView,
   Modal,
   TouchableHighlight,
   TextInput,
   Share,
+  ActivityIndicator,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import Pdf from 'react-native-pdf';
 import CustomIcon from '../../../components/CustomIcon';
 import CustomTheme from '../../../constants/CustomTheme';
-import {scale} from 'react-native-size-matters';
-import RNFS from 'react-native-fs';
+import CustomHeader from '../../../components/CustomHeader';
+import {
+  moderateScale,
+  moderateVerticalScale,
+  scale,
+} from 'react-native-size-matters';
 
-const PdfViewerScreen = ({route}) => {
+const PdfViewerScreen = ({route, navigation}) => {
   const [numberOfPages, setNumberOfPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [zoom, setZoom] = useState(1.0);
   const [modalVisible, setModalVisible] = useState(false);
   const [goToPageModalVisible, setGoToPageModalVisible] = useState(false);
   const [pageInput, setPageInput] = useState('');
+  const [isLoading, setIsLoading] = useState(true); // Track PDF loading state
 
   const {filePath} = route.params;
-  const {darkmodeColor, darkBackgroundColor} = CustomTheme();
+  const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
 
   const pdfRef = useRef(null);
 
@@ -84,16 +89,6 @@ const PdfViewerScreen = ({route}) => {
     );
   };
 
-  const zoomIn = () => {
-    setZoom(zoom + 0.5);
-  };
-
-  const zoomOut = () => {
-    if (zoom > 0.5) {
-      setZoom(zoom - 0.5);
-    }
-  };
-
   const goToPage = () => {
     const pageNum = parseInt(pageInput);
     if (pageNum > 0 && pageNum <= numberOfPages) {
@@ -123,57 +118,67 @@ const PdfViewerScreen = ({route}) => {
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
-      <View style={styles.toolbar}>
-        <TouchableOpacity onPress={zoomOut}>
-          <CustomIcon
-            color={darkmodeColor}
-            name={'zoom-out'}
-            size={scale(16)}
-            type="MaterialIcons"
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={zoomIn}>
-          <CustomIcon
-            color={darkmodeColor}
-            name={'zoom-in'}
-            size={scale(16)}
-            type="MaterialIcons"
-          />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleMenuPress}>
-          <CustomIcon
-            type="MaterialCommunityIcons"
-            color={darkmodeColor}
-            name={'dots-vertical'}
+      <View style={{flex: 1, marginHorizontal: moderateScale(16)}}>
+        <View style={styles.toolbar}>
+          <CustomHeader
             size={scale(24)}
+            iconName={'chevron-back'}
+            color={darkmodeColor}
+            onPress={() => {
+              navigation.goBack();
+            }}
           />
-        </TouchableOpacity>
-      </View>
-      <Pdf
-        ref={pdfRef}
-        source={{uri: filePath}}
-        onLoadComplete={numberOfPages => {
-          setNumberOfPages(numberOfPages);
-          console.log(`Number of pages: ${numberOfPages}`);
-        }}
-        onPageChanged={page => {
-          setCurrentPage(page);
-          console.log(`Current page: ${page}`);
-        }}
-        onError={error => {
-          console.log('Error while loading PDF:', error);
-          Alert.alert('Error', 'Failed to load PDF.');
-        }}
-        onPressLink={uri => {
-          console.log(`Link pressed: ${uri}`);
-        }}
-        scale={zoom}
-        style={styles.pdf}
-      />
-      <View style={styles.footer}>
-        <Text style={{color: darkmodeColor}}>
-          Page {currentPage} of {numberOfPages}
-        </Text>
+          <TouchableOpacity
+            onPress={handleMenuPress}
+            style={{marginRight: moderateScale(16)}}>
+            <CustomIcon
+              type="MaterialCommunityIcons"
+              color={darkmodeColor}
+              name={'dots-vertical'}
+              size={scale(24)}
+            />
+          </TouchableOpacity>
+        </View>
+        <Pdf
+          ref={pdfRef}
+          source={{uri: filePath}}
+          onLoadComplete={numberOfPages => {
+            setNumberOfPages(numberOfPages);
+            setIsLoading(false);
+            console.log(`Number of pages: ${numberOfPages}`);
+          }}
+          onPageChanged={page => {
+            setCurrentPage(page);
+            console.log(`Current page: ${page}`);
+          }}
+          onError={error => {
+            console.log('Error while loading PDF:', error);
+            Alert.alert('Error', 'Failed to load PDF.');
+            setIsLoading(false);
+          }}
+          onPressLink={uri => {
+            console.log(`Link pressed: ${uri}`);
+          }}
+          scale={1.0}
+          style={styles.pdf}
+        />
+        {isLoading && (
+          <View style={styles.loading}>
+            <ActivityIndicator size="large" color={darkmodeColor} />
+          </View>
+        )}
+        <View
+          style={[
+            styles.footer,
+            {
+              borderColor: darkBorderColor,
+              backgroundColor: darkBackgroundColor,
+            },
+          ]}>
+          <Text style={{color: darkmodeColor}}>
+            Page {currentPage} of {numberOfPages}
+          </Text>
+        </View>
       </View>
 
       <Modal
@@ -184,31 +189,50 @@ const PdfViewerScreen = ({route}) => {
           setModalVisible(false);
           setGoToPageModalVisible(false);
         }}>
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
+        <View style={[styles.centeredView, {borderColor: darkmodeColor}]}>
+          <View
+            style={[
+              styles.modalView,
+              {
+                backgroundColor: darkBackgroundColor,
+                borderColor: darkmodeColor,
+              },
+            ]}>
             <TouchableHighlight
-              style={{...styles.openButton, backgroundColor: '#2196F3'}}
+              style={[
+                styles.openButton,
+                {backgroundColor: darkBackgroundColor},
+              ]}
               onPress={confirmDownload}>
               <Text style={[styles.textStyle, {color: darkmodeColor}]}>
                 Download PDF
               </Text>
             </TouchableHighlight>
             <TouchableHighlight
-              style={{...styles.openButton, backgroundColor: '#FF6347'}}
+              style={[
+                styles.openButton,
+                {backgroundColor: darkBackgroundColor},
+              ]}
               onPress={sharePdf}>
               <Text style={[styles.textStyle, {color: darkmodeColor}]}>
                 Share PDF
               </Text>
             </TouchableHighlight>
             <TouchableHighlight
-              style={{...styles.openButton, backgroundColor: '#1E90FF'}}
+              style={[
+                styles.openButton,
+                {backgroundColor: darkBackgroundColor},
+              ]}
               onPress={() => setGoToPageModalVisible(true)}>
               <Text style={[styles.textStyle, {color: darkmodeColor}]}>
                 Go to Page
               </Text>
             </TouchableHighlight>
             <TouchableHighlight
-              style={{...styles.openButton, backgroundColor: '#f194ff'}}
+              style={[
+                styles.openButton,
+                {backgroundColor: darkBackgroundColor},
+              ]}
               onPress={() => {
                 setModalVisible(false);
                 setGoToPageModalVisible(false);
@@ -218,25 +242,47 @@ const PdfViewerScreen = ({route}) => {
               </Text>
             </TouchableHighlight>
             {goToPageModalVisible && (
-              <View style={styles.modalView}>
-                <Text style={styles.modalText}>Go to Page</Text>
+              <View
+                style={[
+                  styles.modalView,
+                  {backgroundColor: darkBackgroundColor},
+                ]}>
+                <Text style={[styles.modalText, {color: darkmodeColor}]}>
+                  Go to Page
+                </Text>
                 <TextInput
-                  style={styles.input}
+                  style={[
+                    styles.input,
+                    {borderColor: darkBorderColor, color: darkmodeColor},
+                  ]}
                   keyboardType="numeric"
                   onChangeText={text => setPageInput(text)}
                   value={pageInput}
                 />
                 <TouchableHighlight
-                  style={{...styles.openButton, backgroundColor: '#1E90FF'}}
+                  style={[
+                    styles.openButton,
+                    {backgroundColor: darkBackgroundColor},
+                  ]}
                   onPress={goToPage}>
-                  <Text style={styles.textStyle}>Go</Text>
+                  <Text style={[styles.textStyle, {color: darkmodeColor}]}>
+                    Go
+                  </Text>
                 </TouchableHighlight>
                 <TouchableHighlight
-                  style={{...styles.openButton, backgroundColor: '#f194ff'}}
+                  style={[
+                    styles.openButton,
+                    {
+                      backgroundColor: darkBackgroundColor,
+                      borderColor: darkBorderColor,
+                    },
+                  ]}
                   onPress={() => {
                     setGoToPageModalVisible(false);
                   }}>
-                  <Text style={styles.textStyle}>Cancel</Text>
+                  <Text style={[styles.textStyle, {color: darkmodeColor}]}>
+                    Cancel
+                  </Text>
                 </TouchableHighlight>
               </View>
             )}
@@ -256,47 +302,59 @@ const styles = StyleSheet.create({
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
-    padding: 10,
+    justifyContent: 'space-between',
+    paddingHorizontal: moderateScale(16),
   },
   pdf: {
     flex: 1,
     width: '100%',
     height: '100%',
   },
-  footer: {
-    padding: 10,
+  loading: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+  footer: {
+    padding: moderateScale(10),
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
   },
   centeredView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 22,
+    marginTop: moderateVerticalScale(21),
+  },
+  modalView: {
+    margin: moderateScale(20),
+    alignItems: 'center',
   },
   openButton: {
-    backgroundColor: '#F194FF',
-    borderRadius: 20,
-    padding: 10,
-    elevation: 2,
-    marginVertical: 10,
+    borderRadius: moderateScale(20),
+    padding: moderateScale(10),
+    marginVertical: moderateVerticalScale(10),
+    minWidth: moderateScale(180),
+    alignItems: 'center',
   },
   textStyle: {
-    color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
   },
   modalText: {
-    marginBottom: 15,
+    marginBottom: moderateVerticalScale(15),
     textAlign: 'center',
+    fontWeight: 'bold',
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
+    height: moderateVerticalScale(40),
     borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    width: 100,
+    marginBottom: moderateVerticalScale(10),
+    paddingHorizontal: moderateScale(10),
+    width: moderateScale(100),
     textAlign: 'center',
   },
 });

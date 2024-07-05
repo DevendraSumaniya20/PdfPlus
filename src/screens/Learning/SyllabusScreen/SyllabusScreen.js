@@ -26,14 +26,23 @@ const SyllabusScreen = ({route}) => {
       id: '1',
       code: 3110005,
       subjectName: 'Basic Electrical Engineering',
-      known_as: 'BEE',
+      known_as: 'BEE1',
+      pdfUrl:
+        'https://www.forteachersforstudents.com.au/site/wp-content/uploads/KidsMedia/RemembranceDay/pdfs/remembrance-day-facts.pdf',
+      downloaded: false,
+    },
+    {
+      id: '2',
+      code: 3110006,
+      subjectName: 'Basic Electrical Engineering',
+      known_as: 'BEE2',
       pdfUrl:
         'https://www.forteachersforstudents.com.au/site/wp-content/uploads/KidsMedia/RemembranceDay/pdfs/remembrance-day-facts.pdf',
       downloaded: false,
     },
   ]);
 
-  const downloadPdf = async (pdfUrl, fileName, itemId) => {
+  const previewPdf = async (pdfUrl, fileName, itemId) => {
     const downloadDest = `${RNFS.DocumentDirectoryPath}/${fileName}`;
 
     const options = {
@@ -69,31 +78,44 @@ const SyllabusScreen = ({route}) => {
 
   const renderItem = ({item}) => (
     <View style={styles.itemContainer}>
-      <View style={styles.item}>
-        <Text
-          onPress={() =>
-            downloadPdf(item.pdfUrl, `${item.known_as}.pdf`, item.id)
-          }
-          style={[styles.cell, {color: darkmodeColor}]}>
-          {item.code}
-        </Text>
-        <Text style={[styles.cell, {color: darkmodeColor}]}>
-          {item.subjectName}
-        </Text>
-        <Text style={[styles.cell, {color: darkmodeColor}]}>
-          {item.known_as}
-        </Text>
-      </View>
+      <Text
+        onPress={() => previewPdf(item.pdfUrl, `${item.known_as}.pdf`, item.id)}
+        style={[
+          styles.cell,
+          {color: darkmodeColor, borderColor: darkBorderColor},
+        ]}>
+        {item.code}
+      </Text>
+      <Text
+        numberOfLines={1}
+        includeFontPadding={false}
+        style={[
+          styles.cell,
+          {color: darkmodeColor, borderColor: darkBorderColor},
+        ]}>
+        {item.subjectName}
+      </Text>
+      <Text
+        style={[
+          styles.cell,
+          {color: darkmodeColor, borderColor: darkBorderColor},
+        ]}>
+        {item.known_as}
+      </Text>
       <TouchableOpacity
-        style={styles.downloadButton}
+        style={[
+          styles.cell,
+          styles.downloadButton,
+          {borderColor: darkBorderColor},
+        ]}
         onPress={() =>
-          downloadPdf(item.pdfUrl, `${item.known_as}.pdf`, item.id)
+          previewPdf(item.pdfUrl, `${item.known_as}.pdf`, item.id)
         }>
         <CustomIcon
           type="Ionicons"
           color={darkmodeColor}
           name={'eye-outline'}
-          size={scale(24)}
+          size={scale(16)}
         />
       </TouchableOpacity>
     </View>
@@ -111,24 +133,36 @@ const SyllabusScreen = ({route}) => {
           }}
         />
         <View style={styles.headerContainer}>
-          <View
-            style={[styles.headerRow, {borderBottomColor: darkBorderColor}]}>
-            <Text style={[styles.headerCell, {color: darkmodeColor}]}>
+          <View style={[styles.headerRow, {borderColor: darkBorderColor}]}>
+            <Text
+              style={[
+                styles.headerCell,
+                {color: darkmodeColor, borderColor: darkBorderColor},
+              ]}>
               Code
             </Text>
-            <Text style={[styles.headerCell, {color: darkmodeColor}]}>
+            <Text
+              style={[
+                styles.headerCell,
+                {color: darkmodeColor, borderColor: darkBorderColor},
+              ]}>
               Subject Name
             </Text>
-            <Text style={[styles.headerCell, {color: darkmodeColor}]}>
+            <Text
+              style={[
+                styles.headerCell,
+                {color: darkmodeColor, borderColor: darkBorderColor},
+              ]}>
               Known as
             </Text>
-            <Text style={[styles.headerCell, {color: darkmodeColor}]}>
+            <Text
+              style={[
+                styles.headerCell,
+                {color: darkmodeColor, borderColor: darkBorderColor},
+              ]}>
               Syllabus
             </Text>
           </View>
-          <View
-            style={[styles.separator, {backgroundColor: darkBorderColor}]}
-          />
         </View>
         {isLoading && (
           <ActivityIndicator
@@ -141,11 +175,6 @@ const SyllabusScreen = ({route}) => {
           data={data}
           renderItem={renderItem}
           keyExtractor={item => item.id.toString()}
-          ItemSeparatorComponent={() => (
-            <View
-              style={[styles.separator, {backgroundColor: darkBorderColor}]}
-            />
-          )}
         />
       </SafeAreaView>
     </View>
@@ -172,32 +201,24 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: scale(14),
     textAlign: 'center',
+    borderWidth: 1,
+    padding: moderateScale(10),
   },
   itemContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingVertical: moderateScale(10),
-    paddingHorizontal: moderateScale(5),
-  },
-  item: {
-    flexDirection: 'row',
-    flex: 4,
-    alignItems: 'center',
   },
   cell: {
     flex: 1,
     fontSize: scale(12),
     textAlign: 'center',
+    borderWidth: 0.5,
+    padding: moderateScale(10),
   },
   downloadButton: {
-    flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
-  },
-  separator: {
-    height: 1.2,
-    marginVertical: moderateScale(5),
+    alignItems: 'center',
   },
   loadingIndicator: {
     position: 'absolute',
