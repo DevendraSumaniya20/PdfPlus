@@ -120,14 +120,16 @@ const PdfViewerScreen = ({route, navigation}) => {
       style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
       <View style={{flex: 1, marginHorizontal: moderateScale(16)}}>
         <View style={styles.toolbar}>
-          <CustomHeader
-            size={scale(24)}
-            iconName={'chevron-back'}
-            color={darkmodeColor}
-            onPress={() => {
-              navigation.goBack();
-            }}
-          />
+          <View style={{marginLeft: moderateScale(-16)}}>
+            <CustomHeader
+              size={scale(24)}
+              iconName={'chevron-back'}
+              color={darkmodeColor}
+              onPress={() => {
+                navigation.goBack();
+              }}
+            />
+          </View>
           <TouchableOpacity
             onPress={handleMenuPress}
             style={{marginRight: moderateScale(16)}}>
@@ -301,8 +303,8 @@ const styles = StyleSheet.create({
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: moderateScale(16),
+    justifyContent: 'space-between',
   },
   pdf: {
     flex: 1,
