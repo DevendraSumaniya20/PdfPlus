@@ -101,6 +101,7 @@ const LoginScreen = () => {
         reduxAuth.password,
       );
       const user = userCredential.user;
+      console.log(user);
 
       const userRef = firestore().collection('Users').doc(user.uid);
 
@@ -121,6 +122,7 @@ const LoginScreen = () => {
           userId: userId,
           email: user.email,
           username: username,
+          displayName: username,
         };
         await userRef.set(userData);
         console.log('User created successfully');
@@ -132,6 +134,7 @@ const LoginScreen = () => {
           userId: userData.userId,
           username: userData.username,
           email: user.email,
+          displayName: userData.username,
         },
       });
     } catch (error) {

@@ -17,12 +17,11 @@ import CustomTheme from '../../constants/CustomTheme';
 import CustomIcon from '../../components/CustomIcon';
 import {useNavigation} from '@react-navigation/native';
 import navigationString from '../../constants/navigationString';
+import firestore from '@react-native-firebase/firestore';
 
 const HomeScreen = ({route}) => {
   const [greeting, setGreeting] = useState('');
-
-  const {userId, username, email} = route?.params || {};
-  console.log(username);
+  const [username, setUsername] = useState('');
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
 

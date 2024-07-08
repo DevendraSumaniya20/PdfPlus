@@ -3,7 +3,7 @@ import {Image, SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {createUserWithEmailAndPassword} from 'firebase/auth';
 import firestore from '@react-native-firebase/firestore';
-import uuid from 'react-native-uuid'; // Import uuid
+import uuid from 'react-native-uuid';
 
 import CustomTextInput from '../../components/CustomTextInput';
 import CustomButton from '../../components/CustomButton';
@@ -39,8 +39,6 @@ const SignUpScreen = () => {
   const navigation = useNavigation();
 
   const handleSignUp = useCallback(async () => {
-    if (emailError || passwordError || confirmPasswordError) return;
-
     try {
       const userSnapshot = await firestore()
         .collection('Users')
@@ -49,6 +47,7 @@ const SignUpScreen = () => {
 
       if (!userSnapshot.empty) {
         console.error('Sign-up error: Email is already in use');
+        setEmailError('Email is already in use');
         return;
       }
 
@@ -80,18 +79,8 @@ const SignUpScreen = () => {
     } catch (error) {
       console.error('Error signing up:', error);
     }
-  }, [
-    email,
-    password,
-    confirmPassword,
-    emailError,
-    passwordError,
-    confirmPasswordError,
-    name,
-    navigation,
-  ]);
+  }, [email, password, name, navigation]);
 
-  // Function to validate form inputs
   const validation = useCallback(() => {
     const emailRegex = /\S+@\S+\.\S+/;
     const passwordRegex =
@@ -267,7 +256,7 @@ const SignUpScreen = () => {
                 secureTextEntry={secureConfirmTextEntry}
                 placeholder="Confirm Password"
                 rightIcon={
-                  setSecureConfirmTextEntry ? 'eye-off-outline' : 'eye-outline'
+                  secureConfirmTextEntry ? 'eye-off-outline' : 'eye-outline'
                 }
                 onChangeText={text => setConfirmPassword(text)}
                 onPressRight={() =>

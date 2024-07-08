@@ -5,16 +5,19 @@ import {useDispatch} from 'react-redux';
 import {auth} from '../../config/Firebase';
 import navigationString from '../../constants/navigationString';
 import {moderateScale, moderateVerticalScale} from 'react-native-size-matters';
-import Color from '../../constants/Color';
+
 import {
   clearCredentials,
   setEmail,
   setPassword,
 } from '../../redux/slices/authSlice';
+import CustomTheme from '../../constants/CustomTheme';
 
 const SettingScreen = ({navigation}) => {
-  const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
+
+  const {darkBackgroundColor, darkBorderColor, darkmodeColor} = CustomTheme();
+  const dispatch = useDispatch();
 
   const signOut = async () => {
     Alert.alert('Confirm Logout', 'Are you sure you want to log out?', [
@@ -44,10 +47,16 @@ const SettingScreen = ({navigation}) => {
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.menuItem} onPress={signOut}>
-        <Text style={styles.menuText}>Sign Out</Text>
-      </TouchableOpacity>
+    <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
+      <View style={{marginHorizontal: moderateScale(16)}}>
+        <TouchableOpacity
+          style={[styles.menuItem, {backgroundColor: darkBackgroundColor}]}
+          onPress={signOut}>
+          <Text style={[styles.menuText, {color: darkmodeColor}]}>
+            Sign Out
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -57,14 +66,12 @@ export default SettingScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: moderateScale(16),
-    paddingTop: moderateVerticalScale(16),
   },
   menuText: {
     fontSize: moderateScale(18),
     fontWeight: '600',
   },
   menuItem: {
-    marginVertical: moderateVerticalScale(8),
+    marginTop: moderateVerticalScale(52),
   },
 });
