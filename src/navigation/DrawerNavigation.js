@@ -4,11 +4,11 @@ import navigationString from '../constants/navigationString';
 import BottomTabNavigation from './BottomTabNavigation';
 import DiscoverScreen from '../screens/DiscoverScreen/DiscoverScreen';
 import MyPdfScreen from '../screens/MyPdfScreen/MyPdfScreen';
-import MyPdfSavedScreen from '../screens/MyPdfSavedScreen/MyPdfSavedScreen';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import SettingScreen from '../screens/SettingScreen/SettingScreen';
 
 const Drawer = createDrawerNavigator();
 
@@ -52,14 +52,15 @@ const DrawerNavigation = () => {
           ),
         }}
       />
+
       <Drawer.Screen
-        name={navigationString.MYPDFSAVEDSCREEN}
-        component={MyPdfSavedScreen}
+        name={navigationString.SETTINGSCREEN}
+        component={SettingScreen}
         options={{
-          drawerLabel: 'Saved',
+          drawerLabel: 'Setting',
           headerShown: false,
           drawerIcon: ({color}) => (
-            <Ionicons name="bookmark-outline" color={color} size={24} />
+            <Ionicons name="settings-outline" color={color} size={24} />
           ),
         }}
       />

@@ -18,8 +18,11 @@ import CustomIcon from '../../components/CustomIcon';
 import {useNavigation} from '@react-navigation/native';
 import navigationString from '../../constants/navigationString';
 
-const HomeScreen = () => {
+const HomeScreen = ({route}) => {
   const [greeting, setGreeting] = useState('');
+
+  const {userId, username, email} = route?.params || {};
+  console.log(username);
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
 
@@ -82,7 +85,7 @@ const HomeScreen = () => {
           />
           <View style={styles.userInfo}>
             <Text style={[styles.userName, {color: darkmodeColor}]}>
-              UserName
+              {username}
             </Text>
             <Text style={[styles.greeting, {color: darkmodeColor}]}>
               {greeting}

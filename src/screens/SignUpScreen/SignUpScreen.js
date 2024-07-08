@@ -1,24 +1,27 @@
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {Image, SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {createUserWithEmailAndPassword} from 'firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+import uuid from 'react-native-uuid'; // Import uuid
 
 import CustomTextInput from '../../components/CustomTextInput';
 import CustomButton from '../../components/CustomButton';
-import CustomTheme from '../../constants/CustomTheme';
-import styles from './Styles';
-import Bubble from '../../animation/Bubble';
 import CustomErrorMessage from '../../components/CustomErrorMessage';
-import {useDispatch, useSelector} from 'react-redux';
+import CustomWelcomeText from '../../components/CustomWelcomeText';
+import CustomHeader from '../../components/CustomHeader';
+import Bubble from '../../animation/Bubble';
+import ImagePath from '../../constants/ImagePath';
+import CustomTheme from '../../constants/CustomTheme';
+import navigationString from '../../constants/navigationString';
+import styles from './Styles';
+import {useNavigation} from '@react-navigation/native';
 import {
   moderateScale,
   moderateVerticalScale,
   scale,
 } from 'react-native-size-matters';
-import navigationString from '../../constants/navigationString';
-import {useNavigation} from '@react-navigation/native';
-import CustomWelcomeText from '../../components/CustomWelcomeText';
-import ImagePath from '../../constants/ImagePath';
-import CustomHeader from '../../components/CustomHeader';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import {auth} from '../../config/Firebase';
 
 const SignUpScreen = () => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
@@ -33,10 +36,63 @@ const SignUpScreen = () => {
   const [nameError, setNameError] = useState('');
 
   const {darkmodeColor, darkBackgroundColor} = CustomTheme();
-
   const navigation = useNavigation();
 
-  const validation = () => {
+  const handleSignUp = useCallback(async () => {
+    if (emailError || passwordError || confirmPasswordError) return;
+
+    try {
+      const userSnapshot = await firestore()
+        .collection('Users')
+        .where('email', '==', email)
+        .get();
+
+      if (!userSnapshot.empty) {
+        console.error('Sign-up error: Email is already in use');
+        return;
+      }
+
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password,
+      );
+      console.log('User signed up successfully:', userCredential.user);
+
+      const userId = uuid.v4();
+      await firestore().collection('Users').doc(userId).set({
+        userId: userId,
+        email: email,
+        name: name,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      });
+
+      console.log('User data saved to Firestore');
+
+      navigation.navigate(navigationString.DRAWERNAVIGATION, {
+        screen: navigationString.HOMESCREEN,
+        params: {
+          userId: userId,
+          username: name,
+          email: userCredential.user.email,
+        },
+      });
+    } catch (error) {
+      console.error('Error signing up:', error);
+    }
+  }, [
+    email,
+    password,
+    confirmPassword,
+    emailError,
+    passwordError,
+    confirmPasswordError,
+    name,
+    navigation,
+  ]);
+
+  // Function to validate form inputs
+  const validation = useCallback(() => {
     const emailRegex = /\S+@\S+\.\S+/;
     const passwordRegex =
       /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
@@ -84,9 +140,19 @@ const SignUpScreen = () => {
     }
 
     if (!nameError && !emailError && !passwordError && !confirmPasswordError) {
-      navigation.navigate(navigationString.DRAWERNAVIGATION);
+      handleSignUp();
     }
-  };
+  }, [
+    name,
+    email,
+    password,
+    confirmPassword,
+    nameError,
+    emailError,
+    passwordError,
+    confirmPasswordError,
+    handleSignUp,
+  ]);
 
   return (
     <KeyboardAwareScrollView

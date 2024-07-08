@@ -8,7 +8,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import HomeScreen from '../screens/HomeScreen/HomeScreen';
 import DiscoverScreen from '../screens/DiscoverScreen/DiscoverScreen';
 import MyPdfScreen from '../screens/MyPdfScreen/MyPdfScreen';
-import MyPdfSavedScreen from '../screens/MyPdfSavedScreen/MyPdfSavedScreen';
+import SettingScreen from '../screens/SettingScreen/SettingScreen';
 
 const BottomTabNavigation = () => {
   const Tab = createMaterialBottomTabNavigator();
@@ -57,13 +57,13 @@ const BottomTabNavigation = () => {
         }}
       />
       <Tab.Screen
-        name={navigationString.MYPDFSAVEDSCREEN}
-        component={MyPdfSavedScreen}
+        name={navigationString.SETTINGSCREEN}
+        component={SettingScreen}
         options={{
           tabBarIcon: ({color}) => (
-            <Ionicons name="bookmark-outline" color={color} size={24} />
+            <Ionicons name="settings-outline" color={color} size={24} />
           ),
-          tabBarLabel: 'Saved',
+          tabBarLabel: 'Setting',
         }}
       />
     </Tab.Navigator>

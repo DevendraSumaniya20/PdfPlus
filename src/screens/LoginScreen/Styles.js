@@ -50,12 +50,13 @@ const styles = StyleSheet.create({
   forgotPasswordView: {
     alignItems: 'flex-end',
     justifyContent: 'flex-end',
+    marginRight: moderateScale(8),
   },
 
   forgotPasswordTextStyle: {
     fontFamily: 'Poppins',
     fontWeight: '600',
-    fontSize: scale(14),
+    fontSize: scale(13),
   },
   SignUpView: {
     alignItems: 'center',

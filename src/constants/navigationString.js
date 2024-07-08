@@ -4,7 +4,6 @@ export default {
   HOMESCREEN: 'HomeScreen',
   FORGOTPASSWORDSCREEN: 'ForgotPasswordScreen',
   DISCOVERSCREEN: 'DiscoverScreen',
-  MYPDFSAVEDSCREEN: 'MyPdfSavedScreen',
   MYPDFSCREEN: 'MyPdfScreen',
   BOTTOMTABNAVIGATION: 'BottomTabNavigation',
   DRAWERNAVIGATION: 'DrawerNavigation',
@@ -16,4 +15,5 @@ export default {
   OLDPAPERSCREEN: 'OldPaperScreen',
   IMPMATERIALSCREEN: 'ImpMaterialScreen',
   PDFVIEWERSCREEN: 'PdfViewerScreen',
+  SETTINGSCREEN: 'SettingScreen',
 };
