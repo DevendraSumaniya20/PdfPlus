@@ -1,5 +1,12 @@
 import React, {useState, useEffect, useCallback} from 'react';
-import {Image, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {signInWithEmailAndPassword} from 'firebase/auth';
 import {useDispatch, useSelector} from 'react-redux';
@@ -11,28 +18,23 @@ import styles from './Styles';
 import Bubble from '../../animation/Bubble';
 import CustomErrorMessage from '../../components/CustomErrorMessage';
 import {setEmail, setPassword} from '../../redux/slices/authSlice';
-import {
-  moderateScale,
-  moderateVerticalScale,
-  scale,
-} from 'react-native-size-matters';
+import {scale} from 'react-native-size-matters';
 import navigationString from '../../constants/navigationString';
 import CustomWelcomeText from '../../components/CustomWelcomeText';
 import ImagePath from '../../constants/ImagePath';
 import {auth} from '../../config/Firebase';
-import uuid from 'react-native-uuid';
+import {getData, storeData} from '../../utils/AsyncStorage';
 import firestore from '@react-native-firebase/firestore';
 
 const LoginScreen = () => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [loading, setLoading] = useState(false);
 
   const {darkmodeColor, darkBackgroundColor} = CustomTheme();
   const navigation = useNavigation();
   const dispatch = useDispatch();
-
   const reduxAuth = useSelector(state => state.auth);
 
   useEffect(() => {
@@ -41,10 +43,11 @@ const LoginScreen = () => {
 
   const checkTokens = useCallback(async () => {
     try {
-      const accessToken = await AsyncStorage.getItem('accessToken');
-
+      const accessToken = await getData('accessToken');
       if (accessToken) {
-        navigation.navigate(navigationString.DRAWERNAVIGATION);
+        navigation.navigate(navigationString.DRAWERNAVIGATION, {
+          screen: navigationString.HOMESCREEN,
+        });
       } else {
         console.log('Access Token not found. Navigating to LoginScreen...');
         navigation.navigate(navigationString.LOGINSCREEN);
@@ -60,86 +63,78 @@ const LoginScreen = () => {
       /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
     const emailMaxLength = 50;
     const passwordMaxLength = 30;
-
-    setEmailError('');
-    setPasswordError('');
+    let valid = true;
 
     if (!reduxAuth.email) {
       setEmailError('Please enter Email Address');
+      valid = false;
     } else if (!emailRegex.test(reduxAuth.email)) {
       setEmailError('Invalid Email Address');
+      valid = false;
     } else if (reduxAuth.email.length > emailMaxLength) {
       setEmailError(
         `Email Address must be less than ${emailMaxLength} characters`,
       );
+      valid = false;
+    } else {
+      setEmailError('');
     }
 
     if (!reduxAuth.password) {
       setPasswordError('Please enter Password');
+      valid = false;
     } else if (!passwordRegex.test(reduxAuth.password)) {
       setPasswordError(
         'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one digit, and one special character',
       );
+      valid = false;
     } else if (reduxAuth.password.length > passwordMaxLength) {
       setPasswordError(
         `Password must be less than ${passwordMaxLength} characters`,
       );
+      valid = false;
+    } else {
+      setPasswordError('');
     }
 
-    if (!emailError && !passwordError) {
+    if (valid) {
       handleLogin();
     }
-  }, [reduxAuth.email, reduxAuth.password, emailError, passwordError]);
+  }, [reduxAuth.email, reduxAuth.password, handleLogin]);
 
   const handleLogin = useCallback(async () => {
     try {
       setLoading(true);
-
       const userCredential = await signInWithEmailAndPassword(
         auth,
         reduxAuth.email,
         reduxAuth.password,
       );
       const user = userCredential.user;
-      console.log(user);
-
-      const userRef = firestore().collection('Users').doc(user.uid);
+      console.log('User signed in successfully:', user);
 
       const idToken = await user.getIdToken();
-      await AsyncStorage.setItem('idToken', idToken);
-      await AsyncStorage.setItem('accessToken', idToken);
+      await storeData('idToken', idToken);
+      await storeData('accessToken', idToken);
 
-      const username = reduxAuth.email.split('@')[0];
-
-      let userData;
-      const doc = await userRef.get();
-      if (doc.exists) {
-        console.log('User already exists:', doc.data());
-        userData = doc.data();
+      const snapshot = await firestore()
+        .collection('Users')
+        .where('email', '==', reduxAuth.email)
+        .get();
+      if (!snapshot.empty) {
+        const userId = snapshot.docs[0].data().userId;
+        await storeData('userId', userId);
+        console.log('User data:', snapshot.docs[0].data());
       } else {
-        const userId = uuid.v4();
-        userData = {
-          userId: userId,
-          email: user.email,
-          username: username,
-          displayName: username,
-        };
-        await userRef.set(userData);
-        console.log('User created successfully');
+        Alert.alert('User Not Found!');
       }
 
       navigation.navigate(navigationString.DRAWERNAVIGATION, {
         screen: navigationString.HOMESCREEN,
-        params: {
-          userId: userData.userId,
-          username: userData.username,
-          email: user.email,
-          displayName: userData.username,
-        },
       });
     } catch (error) {
-      const errorMessage = error.message;
-      console.error('Sign-in error:', errorMessage);
+      console.error('Sign-in error:', error.message);
+      Alert.alert('Sign-in Error', error.message);
     } finally {
       setLoading(false);
     }
@@ -185,15 +180,7 @@ const LoginScreen = () => {
                 onChangeText={text => dispatch(setEmail(text))}
                 value={reduxAuth.email}
               />
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'flex-start',
-                  marginBottom: moderateVerticalScale(4),
-                  marginLeft: moderateScale(8),
-                }}>
-                <CustomErrorMessage text={emailError} style={{color: 'red'}} />
-              </View>
+              <CustomErrorMessage text={emailError} style={{color: 'red'}} />
             </View>
 
             <View style={styles.passwordView}>
@@ -206,53 +193,36 @@ const LoginScreen = () => {
                 onPressRight={() => setSecureTextEntry(!secureTextEntry)}
                 placeholderTextColor={darkmodeColor}
               />
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'flex-start',
-                  marginBottom: moderateVerticalScale(4),
-                  marginLeft: moderateScale(8),
-                }}>
-                <CustomErrorMessage
-                  text={passwordError}
-                  style={{color: 'red'}}
-                />
-              </View>
+              <CustomErrorMessage text={passwordError} style={{color: 'red'}} />
             </View>
           </View>
-          <View style={styles.forgotPasswordView}>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.navigate(navigationString.FORGOTPASSWORDSCREEN);
-              }}>
-              <Text
-                style={[
-                  styles.forgotPasswordTextStyle,
-                  {color: darkmodeColor},
-                ]}>
-                Forgot Password?
-              </Text>
-            </TouchableOpacity>
-          </View>
+
+          <TouchableOpacity
+            style={styles.forgotPasswordView}
+            onPress={() =>
+              navigation.navigate(navigationString.FORGOTPASSWORDSCREEN)
+            }>
+            <Text
+              style={[styles.forgotPasswordTextStyle, {color: darkmodeColor}]}>
+              Forgot Password?
+            </Text>
+          </TouchableOpacity>
 
           <View style={styles.loginButtonView}>
-            <CustomButton
-              text={'Login'}
-              onPress={() => {
-                validation();
-              }}
-            />
+            {loading ? (
+              <ActivityIndicator size="small" color={darkmodeColor} />
+            ) : (
+              <CustomButton text={'Login'} onPress={validation} />
+            )}
           </View>
-          <View style={styles.SignUpView}>
-            <TouchableOpacity
-              onPress={() => {
-                navigation.navigate(navigationString.SIGNUPSCREEN);
-              }}>
-              <Text style={[styles.signUpTextStyle, {color: darkmodeColor}]}>
-                Sign up
-              </Text>
-            </TouchableOpacity>
-          </View>
+
+          <TouchableOpacity
+            style={styles.SignUpView}
+            onPress={() => navigation.navigate(navigationString.SIGNUPSCREEN)}>
+            <Text style={[styles.signUpTextStyle, {color: darkmodeColor}]}>
+              Sign up
+            </Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>

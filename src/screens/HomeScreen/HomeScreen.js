@@ -18,15 +18,25 @@ import CustomIcon from '../../components/CustomIcon';
 import {useNavigation} from '@react-navigation/native';
 import navigationString from '../../constants/navigationString';
 import firestore from '@react-native-firebase/firestore';
+import {getData, storeData} from '../../utils/AsyncStorage';
 
 const HomeScreen = ({route}) => {
   const [greeting, setGreeting] = useState('');
   const [username, setUsername] = useState('');
 
+  const navigation = useNavigation();
+
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
 
-  const keyExtractor = item => item.id.toString();
-  const navigation = useNavigation();
+  useEffect(() => {
+    getUserInfo();
+  }, []);
+
+  const getUserInfo = async () => {
+    const userId = await getData('USERID');
+    const user = await firestore().collection('Users').get();
+    console.log(userId);
+  };
 
   const data = [
     {id: '1', text: 'Computer Engineering'},
@@ -38,6 +48,8 @@ const HomeScreen = ({route}) => {
     {id: '7', text: 'Information and Technology Engineering'},
     {id: '8', text: 'Other Subjects'},
   ];
+
+  const keyExtractor = item => item.id.toString();
 
   const renderItem = ({item}) => (
     <TouchableOpacity
@@ -84,7 +96,8 @@ const HomeScreen = ({route}) => {
           />
           <View style={styles.userInfo}>
             <Text style={[styles.userName, {color: darkmodeColor}]}>
-              {username}
+              {/* {username} */}
+              helllllo
             </Text>
             <Text style={[styles.greeting, {color: darkmodeColor}]}>
               {greeting}

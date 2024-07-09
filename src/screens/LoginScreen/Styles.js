@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
   SignUpView: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginVertical: moderateVerticalScale(8),
   },
   signUpTextStyle: {
     fontSize: scale(16),

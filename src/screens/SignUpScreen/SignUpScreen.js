@@ -1,8 +1,15 @@
-import React, {useState, useCallback} from 'react';
-import {Image, SafeAreaView, Text, TouchableOpacity, View} from 'react-native';
+import React, {useState, useCallback, useEffect} from 'react';
+import {
+  Image,
+  SafeAreaView,
+  Text,
+  TouchableOpacity,
+  View,
+  Platform,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {createUserWithEmailAndPassword} from 'firebase/auth';
-import firestore from '@react-native-firebase/firestore';
 import uuid from 'react-native-uuid';
 
 import CustomTextInput from '../../components/CustomTextInput';
@@ -22,6 +29,9 @@ import {
   scale,
 } from 'react-native-size-matters';
 import {auth} from '../../config/Firebase';
+import firestore from '@react-native-firebase/firestore';
+import {createUserWithEmailAndPassword} from 'firebase/auth';
+import {storeData} from '../../utils/AsyncStorage';
 
 const SignUpScreen = () => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
@@ -34,12 +44,23 @@ const SignUpScreen = () => {
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const {darkmodeColor, darkBackgroundColor} = CustomTheme();
   const navigation = useNavigation();
 
+  useEffect(() => {
+    setEmailError('');
+    setPasswordError('');
+    setConfirmPasswordError('');
+    setNameError('');
+  }, []);
+
   const handleSignUp = useCallback(async () => {
     try {
+      setLoading(true);
+
+      // Check if email is already in use
       const userSnapshot = await firestore()
         .collection('Users')
         .where('email', '==', email)
@@ -48,36 +69,49 @@ const SignUpScreen = () => {
       if (!userSnapshot.empty) {
         console.error('Sign-up error: Email is already in use');
         setEmailError('Email is already in use');
+        setLoading(false);
         return;
       }
 
+      const userId = uuid.v4();
+
+      // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password,
       );
-      console.log('User signed up successfully:', userCredential.user);
+      const user = userCredential.user;
+      console.log('User signed up successfully:', user);
 
-      const userId = uuid.v4();
+      // Store user data in Firestore
       await firestore().collection('Users').doc(userId).set({
         userId: userId,
-        email: email,
+        email: user.email,
         name: name,
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
       console.log('User data saved to Firestore');
 
+      // Store token in async storage
+      const idToken = await user.getIdToken();
+      await storeData('idToken', idToken);
+      await storeData('accessToken', idToken);
+
+      // Navigate to the home screen with necessary params
       navigation.navigate(navigationString.DRAWERNAVIGATION, {
         screen: navigationString.HOMESCREEN,
         params: {
           userId: userId,
-          username: name,
-          email: userCredential.user.email,
+          email: user.email,
         },
       });
     } catch (error) {
       console.error('Error signing up:', error);
+      Alert.alert('Sign-up Error', error.message);
+    } finally {
+      setLoading(false);
     }
   }, [email, password, name, navigation]);
 
@@ -279,12 +313,16 @@ const SignUpScreen = () => {
           </View>
 
           <View style={styles.loginButtonView}>
-            <CustomButton
-              text={'Sign up'}
-              onPress={() => {
-                validation();
-              }}
-            />
+            {loading ? (
+              <ActivityIndicator size="small" color={darkmodeColor} />
+            ) : (
+              <CustomButton
+                text={'Sign up'}
+                onPress={() => {
+                  validation();
+                }}
+              />
+            )}
           </View>
           <View style={styles.SignUpView}>
             <TouchableOpacity
