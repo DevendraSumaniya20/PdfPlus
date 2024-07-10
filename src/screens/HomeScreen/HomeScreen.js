@@ -23,7 +23,7 @@ import {getData, storeData} from '../../utils/AsyncStorage';
 const HomeScreen = ({route}) => {
   const [greeting, setGreeting] = useState('');
   const [username, setUsername] = useState('');
-
+  const [userProfilePic, setUserProfilePic] = useState('');
   const navigation = useNavigation();
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
@@ -34,8 +34,21 @@ const HomeScreen = ({route}) => {
 
   const getUserInfo = async () => {
     const userId = await getData('USERID');
-    const user = await firestore().collection('Users').get();
-    console.log(userId);
+    if (userId) {
+      const userSnapshot = await firestore()
+        .collection('Users')
+        .doc(userId)
+        .get();
+      if (userSnapshot.exists) {
+        const userData = userSnapshot.data();
+        setUsername(userData.name);
+        setUserProfilePic(userData.profilePic);
+      } else {
+        console.log('User does not exist');
+      }
+    } else {
+      console.log('No User ID found');
+    }
   };
 
   const data = [
@@ -90,14 +103,15 @@ const HomeScreen = ({route}) => {
         <View style={styles.userProfileContainer}>
           <Image
             source={{
-              uri: 'https://s.yimg.com/ny/api/res/1.2/zpFvsAowCv0gf6.Nx0FHAw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTY0MDtoPTM2MA--/https://s.yimg.com/os/creatr-uploaded-images/2023-09/19fa78d0-5c92-11ee-bdf7-4c07cf46d8b9',
+              uri:
+                userProfilePic ||
+                'https://s.yimg.com/ny/api/res/1.2/zpFvsAowCv0gf6.Nx0FHAw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTY0MDtoPTM2MA--/https://s.yimg.com/os/creatr-uploaded-images/2023-09/19fa78d0-5c92-11ee-bdf7-4c07cf46d8b9',
             }}
             style={styles.profileImage}
           />
           <View style={styles.userInfo}>
             <Text style={[styles.userName, {color: darkmodeColor}]}>
-              {/* {username} */}
-              helllllo
+              {username}
             </Text>
             <Text style={[styles.greeting, {color: darkmodeColor}]}>
               {greeting}

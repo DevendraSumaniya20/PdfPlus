@@ -8,10 +8,11 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  Modal,
+  PermissionsAndroid,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import uuid from 'react-native-uuid';
-
 import CustomTextInput from '../../components/CustomTextInput';
 import CustomButton from '../../components/CustomButton';
 import CustomErrorMessage from '../../components/CustomErrorMessage';
@@ -23,15 +24,12 @@ import CustomTheme from '../../constants/CustomTheme';
 import navigationString from '../../constants/navigationString';
 import styles from './Styles';
 import {useNavigation} from '@react-navigation/native';
-import {
-  moderateScale,
-  moderateVerticalScale,
-  scale,
-} from 'react-native-size-matters';
 import {auth} from '../../config/Firebase';
 import firestore from '@react-native-firebase/firestore';
 import {createUserWithEmailAndPassword} from 'firebase/auth';
 import {storeData} from '../../utils/AsyncStorage';
+import {moderateVerticalScale, scale} from 'react-native-size-matters';
+import ImagePicker from 'react-native-image-crop-picker';
 
 const SignUpScreen = () => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
@@ -45,8 +43,12 @@ const SignUpScreen = () => {
   const [name, setName] = useState('');
   const [nameError, setNameError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [imageUri, setImageUri] = useState(null);
 
-  const {darkmodeColor, darkBackgroundColor} = CustomTheme();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(ImagePath.LOGOBLACK);
+
+  const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -56,9 +58,94 @@ const SignUpScreen = () => {
     setNameError('');
   }, []);
 
+  const requestCameraPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'Camera Permission',
+          message: 'This app needs access to your camera.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Camera permission granted');
+        openImagePicker('camera');
+      } else {
+        console.log('Camera permission denied');
+      }
+    } catch (error) {
+      console.error('Error requesting camera permission: ', error);
+    }
+  };
+
+  const requestGalleryPermission = async () => {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        {
+          title: 'Gallery Permission',
+          message: 'This app needs access to your gallery.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+        console.log('Gallery permission granted');
+        openImagePicker('gallery');
+      } else {
+        console.log('Gallery permission denied');
+      }
+    } catch (error) {
+      console.error('Error requesting gallery permission: ', error);
+    }
+  };
+
+  const openImagePicker = async type => {
+    try {
+      let selectedImage;
+      if (type === 'camera') {
+        selectedImage = await ImagePicker.openCamera({
+          width: 300,
+          height: 400,
+          cropping: true,
+        });
+        console.log('Image from camera:', selectedImage);
+        handleCameraImage(selectedImage);
+      } else if (type === 'gallery') {
+        selectedImage = await ImagePicker.openPicker({
+          width: 300,
+          height: 400,
+          cropping: true,
+        });
+        console.log('Image from gallery:', selectedImage);
+        handleGalleryImage(selectedImage);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleCameraImage = selectedImage => {
+    setSelectedImage({uri: selectedImage.path});
+  };
+
+  const handleGalleryImage = selectedImage => {
+    setSelectedImage({uri: selectedImage.path});
+  };
+
   const handleSignUp = useCallback(async () => {
     try {
       setLoading(true);
+
+      // Validate form fields
+      if (!validation()) {
+        setLoading(false);
+        return;
+      }
 
       // Check if email is already in use
       const userSnapshot = await firestore()
@@ -89,6 +176,7 @@ const SignUpScreen = () => {
         userId: userId,
         email: user.email,
         name: name,
+        imageUri: imageUri, // Save image URI
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
@@ -105,6 +193,8 @@ const SignUpScreen = () => {
         params: {
           userId: userId,
           email: user.email,
+          name: name, // Pass the name here
+          imageUri: imageUri, // Pass the image URI here
         },
       });
     } catch (error) {
@@ -113,7 +203,7 @@ const SignUpScreen = () => {
     } finally {
       setLoading(false);
     }
-  }, [email, password, name, navigation]);
+  }, [email, password, name, imageUri, navigation]);
 
   const validation = useCallback(() => {
     const emailRegex = /\S+@\S+\.\S+/;
@@ -177,6 +267,19 @@ const SignUpScreen = () => {
     handleSignUp,
   ]);
 
+  const handleImagePicker = () => {
+    setModalVisible(true);
+  };
+
+  const handleImageSelection = type => {
+    setModalVisible(false);
+    if (type === 'camera') {
+      requestCameraPermission();
+    } else if (type === 'gallery') {
+      requestGalleryPermission();
+    }
+  };
+
   return (
     <KeyboardAwareScrollView
       style={{flex: 1}}
@@ -205,18 +308,21 @@ const SignUpScreen = () => {
               }}
             />
           </View>
-          <View style={styles.imageView}>
+          <TouchableOpacity
+            style={styles.imageView}
+            onPress={handleImagePicker}>
             <Image
               source={
-                darkmodeColor == '#000'
-                  ? ImagePath.LOGOBLACK
-                  : ImagePath.LOGOWHITE
+                selectedImage && selectedImage.uri
+                  ? {uri: selectedImage.uri}
+                  : ImagePath.LOGOBLACK
               }
               resizeMethod="auto"
               resizeMode="center"
-              style={styles.image}
+              style={[styles.image, {borderRadius: 50}]}
             />
-          </View>
+          </TouchableOpacity>
+
           <View style={styles.welcomeTextView}>
             <CustomWelcomeText
               text={'Sign up'}
@@ -226,102 +332,55 @@ const SignUpScreen = () => {
               fontWeight="700"
             />
           </View>
-
           <View style={styles.inputView}>
-            <View style={styles.emailView}>
-              <CustomTextInput
-                placeholder="Full Name"
-                onChangeText={text => setName(text)}
-                placeholderTextColor={darkmodeColor}
-              />
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'flex-start',
-                  marginBottom: moderateVerticalScale(4),
-                  marginLeft: moderateScale(8),
-                }}>
-                <CustomErrorMessage text={nameError} style={{color: 'red'}} />
-              </View>
-            </View>
-            <View style={styles.emailView}>
-              <CustomTextInput
-                placeholder="Email"
-                onChangeText={text => setEmail(text)}
-                placeholderTextColor={darkmodeColor}
-              />
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'flex-start',
-                  marginBottom: moderateVerticalScale(4),
-                  marginLeft: moderateScale(8),
-                }}>
-                <CustomErrorMessage text={emailError} style={{color: 'red'}} />
-              </View>
-            </View>
+            <CustomTextInput
+              placeholder="Full Name"
+              onChangeText={text => setName(text)}
+              placeholderTextColor={darkmodeColor}
+            />
+            <CustomErrorMessage text={nameError} style={{color: 'red'}} />
 
-            <View style={styles.passwordView}>
-              <CustomTextInput
-                secureTextEntry={secureTextEntry}
-                placeholder="Password"
-                onChangeText={text => setPassword(text)}
-                rightIcon={secureTextEntry ? 'eye-off-outline' : 'eye-outline'}
-                onPressRight={() => setSecureTextEntry(!secureTextEntry)}
-                placeholderTextColor={darkmodeColor}
-              />
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'flex-start',
-                  marginBottom: moderateVerticalScale(4),
-                  marginLeft: moderateScale(8),
-                }}>
-                <CustomErrorMessage
-                  text={passwordError}
-                  style={{color: 'red'}}
-                />
-              </View>
-            </View>
-            <View style={styles.passwordView}>
-              <CustomTextInput
-                placeholderTextColor={darkmodeColor}
-                inputStyle={{width: '90%'}}
-                secureTextEntry={secureConfirmTextEntry}
-                placeholder="Confirm Password"
-                rightIcon={
-                  secureConfirmTextEntry ? 'eye-off-outline' : 'eye-outline'
-                }
-                onChangeText={text => setConfirmPassword(text)}
-                onPressRight={() =>
-                  setSecureConfirmTextEntry(!secureConfirmTextEntry)
-                }
-              />
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'flex-start',
-                  marginBottom: moderateVerticalScale(4),
-                  marginLeft: moderateScale(8),
-                }}>
-                <CustomErrorMessage
-                  text={confirmPasswordError}
-                  style={{color: 'red'}}
-                />
-              </View>
-            </View>
+            <CustomTextInput
+              placeholder="Email"
+              onChangeText={text => setEmail(text)}
+              placeholderTextColor={darkmodeColor}
+            />
+            <CustomErrorMessage text={emailError} style={{color: 'red'}} />
           </View>
+
+          <CustomTextInput
+            secureTextEntry={secureTextEntry}
+            placeholder="Password"
+            onChangeText={text => setPassword(text)}
+            rightIcon={secureTextEntry ? 'eye-off-outline' : 'eye-outline'}
+            onPressRight={() => setSecureTextEntry(!secureTextEntry)}
+            placeholderTextColor={darkmodeColor}
+          />
+          <CustomErrorMessage text={passwordError} style={{color: 'red'}} />
+
+          <CustomTextInput
+            placeholderTextColor={darkmodeColor}
+            inputStyle={{width: '90%'}}
+            secureTextEntry={secureConfirmTextEntry}
+            placeholder="Confirm Password"
+            rightIcon={
+              secureConfirmTextEntry ? 'eye-off-outline' : 'eye-outline'
+            }
+            onChangeText={text => setConfirmPassword(text)}
+            onPressRight={() =>
+              setSecureConfirmTextEntry(!secureConfirmTextEntry)
+            }
+          />
+          <CustomErrorMessage
+            text={confirmPasswordError}
+            style={{color: 'red'}}
+          />
 
           <View style={styles.loginButtonView}>
             {loading ? (
               <ActivityIndicator size="small" color={darkmodeColor} />
             ) : (
-              <CustomButton
-                text={'Sign up'}
-                onPress={() => {
-                  validation();
-                }}
-              />
+              <CustomButton text={'Sign up'} onPress={handleSignUp} />
             )}
           </View>
           <View style={styles.SignUpView}>
@@ -335,6 +394,34 @@ const SignUpScreen = () => {
             </TouchableOpacity>
           </View>
         </View>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(false);
+          }}>
+          <View style={[styles.modalContainer]}>
+            <View style={[styles.modalView]}>
+              <Text style={styles.modalTitle}>Select Image Source</Text>
+              <TouchableOpacity
+                style={[styles.modalButton]}
+                onPress={() => handleImageSelection('camera')}>
+                <Text style={styles.modalButtonText}>Camera</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton]}
+                onPress={() => handleImageSelection('gallery')}>
+                <Text style={styles.modalButtonText}>Gallery</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalCancelButton]}
+                onPress={() => setModalVisible(false)}>
+                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </KeyboardAwareScrollView>
   );
