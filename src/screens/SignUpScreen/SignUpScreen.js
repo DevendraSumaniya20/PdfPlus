@@ -17,7 +17,6 @@ import uuid from 'react-native-uuid';
 import CustomTextInput from '../../components/CustomTextInput';
 import CustomButton from '../../components/CustomButton';
 import CustomErrorMessage from '../../components/CustomErrorMessage';
-import CustomWelcomeText from '../../components/CustomWelcomeText';
 import CustomHeader from '../../components/CustomHeader';
 import Bubble from '../../animation/Bubble';
 import ImagePath from '../../constants/ImagePath';
@@ -29,11 +28,7 @@ import {auth} from '../../config/Firebase';
 import firestore from '@react-native-firebase/firestore';
 import {createUserWithEmailAndPassword} from 'firebase/auth';
 import {storeData} from '../../utils/AsyncStorage';
-import {
-  moderateScale,
-  moderateVerticalScale,
-  scale,
-} from 'react-native-size-matters';
+import {moderateScale, moderateVerticalScale} from 'react-native-size-matters';
 import ImagePicker from 'react-native-image-crop-picker';
 
 const SignUpScreen = () => {
@@ -146,13 +141,11 @@ const SignUpScreen = () => {
     try {
       setLoading(true);
 
-      // Validate form fields
       if (!validation()) {
         setLoading(false);
         return;
       }
 
-      // Check if email is already in use
       const userSnapshot = await firestore()
         .collection('Users')
         .where('email', '==', email)
@@ -164,29 +157,27 @@ const SignUpScreen = () => {
         return;
       }
 
-      const userId = uuid.v4();
-
-      // Create user with email and password
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password,
       );
-      const user = userCredential.user;
 
-      // Store user data in Firestore
+      const user = userCredential.user;
+      const userId = uuid.v4();
+
       await firestore().collection('Users').doc(userId).set({
         userId: userId,
         email: user.email,
         name: name,
-        imageUri: imageUri, // Save image URI
+        imageUri: imageUri,
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
-      // Store token in async storage
       const idToken = await user.getIdToken();
       await storeData('idToken', idToken);
       await storeData('accessToken', idToken);
+      await storeData('userId', userId);
 
       navigation.navigate(navigationString.DRAWERNAVIGATION, {
         screen: navigationString.HOMESCREEN,
@@ -206,6 +197,10 @@ const SignUpScreen = () => {
   }, [email, password, name, imageUri, navigation]);
 
   const validation = () => {
+    console.log('Validating form fields');
+    console.log('Password:', password);
+    console.log('Confirm Password:', confirmPassword);
+
     const emailRegex = /\S+@\S+\.\S+/;
     const passwordRegex =
       /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
@@ -243,9 +238,9 @@ const SignUpScreen = () => {
     }
 
     if (!confirmPassword) {
-      confirmPasswordError = 'Please confirm your Password';
+      setConfirmPasswordError('Please confirm your Password');
     } else if (confirmPassword !== password) {
-      confirmPasswordError = 'Passwords do not match';
+      setConfirmPasswordError('Passwords do not match');
     }
 
     if (!imageUri) {
@@ -258,15 +253,13 @@ const SignUpScreen = () => {
     setNameError(nameError);
     setImageError(imageError);
 
-    if (
-      !nameError &&
+    return (
       !emailError &&
       !passwordError &&
       !confirmPasswordError &&
+      !nameError &&
       !imageError
-    ) {
-      handleSignUp();
-    }
+    );
   };
 
   const handleImagePicker = () => {
@@ -362,14 +355,11 @@ const SignUpScreen = () => {
           <CustomErrorMessage text={passwordError} style={{color: 'red'}} />
 
           <CustomTextInput
-            placeholderTextColor={darkmodeColor}
-            inputStyle={{width: '90%'}}
-            secureTextEntry={secureConfirmTextEntry}
             placeholder="Confirm Password"
-            rightIcon={
-              secureConfirmTextEntry ? 'eye-off-outline' : 'eye-outline'
-            }
             onChangeText={text => setConfirmPassword(text)}
+            secureTextEntry={secureConfirmTextEntry}
+            placeholderTextColor={darkmodeColor}
+            rightIcon={secureTextEntry ? 'eye-off-outline' : 'eye-outline'}
             onPressRight={() =>
               setSecureConfirmTextEntry(!secureConfirmTextEntry)
             }
@@ -409,18 +399,38 @@ const SignUpScreen = () => {
           onRequestClose={() => {
             setModalVisible(false);
           }}>
-          <View style={[styles.modalContainer]}>
-            <View style={[styles.modalView]}>
-              <Text style={styles.modalTitle}>Select Image Source</Text>
+          <View
+            style={[
+              styles.modalContainer,
+              // {backgroundColor: darkBackgroundColor},
+            ]}>
+            <View
+              style={[
+                styles.modalView,
+                {backgroundColor: darkBackgroundColor},
+              ]}>
+              <Text style={[styles.modalTitle, {color: darkmodeColor}]}>
+                Select Image Source
+              </Text>
               <TouchableOpacity
-                style={[styles.modalButton]}
+                style={[
+                  styles.modalButton,
+                  {
+                    borderColor: darkBorderColor,
+                    backgroundColor: darkBackgroundColor,
+                  },
+                ]}
                 onPress={() => handleImageSelection('camera')}>
-                <Text style={styles.modalButtonText}>Camera</Text>
+                <Text style={[styles.modalButtonText, {color: darkmodeColor}]}>
+                  Camera
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton]}
+                style={[styles.modalButton, {borderColor: darkBorderColor}]}
                 onPress={() => handleImageSelection('gallery')}>
-                <Text style={styles.modalButtonText}>Gallery</Text>
+                <Text style={[styles.modalButtonText, {color: darkmodeColor}]}>
+                  Gallery
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.modalCancelButton]}

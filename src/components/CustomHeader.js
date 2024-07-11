@@ -15,9 +15,9 @@ const CustomHeader = ({
   const {darkmodeColor, darkBackgroundColor} = CustomTheme();
 
   return (
-    <View style={[styles.container, {backgroundColor: 'transperent'}]}>
+    <View style={[styles.container]}>
       <TouchableOpacity
-        style={[styles.button, {backgroundColor: darkBackgroundColor}]}
+        style={[styles.button, {}]}
         onPress={onPress}
         activeOpacity={0.5}>
         <View style={styles.iconContainer}>

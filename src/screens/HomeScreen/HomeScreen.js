@@ -1,3 +1,4 @@
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,7 +8,6 @@ import {
   FlatList,
   TouchableOpacity,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
 import {
   moderateScale,
   moderateVerticalScale,
@@ -18,7 +18,7 @@ import CustomIcon from '../../components/CustomIcon';
 import {useNavigation} from '@react-navigation/native';
 import navigationString from '../../constants/navigationString';
 import firestore from '@react-native-firebase/firestore';
-import {getData, storeData} from '../../utils/AsyncStorage';
+import {getData} from '../../utils/AsyncStorage';
 
 const HomeScreen = ({route}) => {
   const [greeting, setGreeting] = useState('');
@@ -33,21 +33,22 @@ const HomeScreen = ({route}) => {
   }, []);
 
   const getUserInfo = async () => {
-    const userId = await getData('USERID');
-    if (userId) {
-      const userSnapshot = await firestore()
-        .collection('Users')
-        .doc(userId)
-        .get();
-      if (userSnapshot.exists) {
-        const userData = userSnapshot.data();
-        setUsername(userData.name);
-        setUserProfilePic(userData.profilePic);
+    try {
+      const userId = await getData('userId');
+      if (userId) {
+        const userDoc = await firestore().collection('Users').doc(userId).get();
+        if (userDoc.exists) {
+          const userData = userDoc.data();
+          setUsername(userData.name);
+          setUserProfilePic(userData.imageUri);
+        } else {
+          console.log('User document not found!');
+        }
       } else {
-        console.log('User does not exist');
+        console.log('User ID not found in AsyncStorage');
       }
-    } else {
-      console.log('No User ID found');
+    } catch (error) {
+      console.error('Error fetching user info: ', error);
     }
   };
 
@@ -82,7 +83,7 @@ const HomeScreen = ({route}) => {
   );
 
   useEffect(() => {
-    const GetCurrentGreeting = () => {
+    const getCurrentGreeting = () => {
       let today = new Date();
       let currentHour = today.getHours();
 
@@ -94,7 +95,7 @@ const HomeScreen = ({route}) => {
         setGreeting('Good Evening');
       }
     };
-    GetCurrentGreeting();
+    getCurrentGreeting();
   }, []);
 
   return (
@@ -117,7 +118,6 @@ const HomeScreen = ({route}) => {
               {greeting}
             </Text>
           </View>
-
           <CustomIcon color={darkmodeColor} name={'book'} size={scale(24)} />
         </View>
         <View style={[styles.nextView, {backgroundColor: darkBackgroundColor}]}>
@@ -168,9 +168,6 @@ const styles = StyleSheet.create({
   },
   greeting: {
     fontSize: scale(16),
-  },
-  micButton: {
-    marginLeft: moderateScale(8),
   },
   nextView: {
     padding: moderateScale(16),

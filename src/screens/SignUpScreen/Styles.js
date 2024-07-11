@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   SignUpView: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: moderateVerticalScale(8),
+    marginVertical: moderateVerticalScale(16),
   },
   signUpTextStyle: {
     fontSize: scale(16),
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     width: '80%',
-    backgroundColor: 'white',
+
     borderRadius: moderateScale(10),
     padding: moderateScale(20),
     alignItems: 'center',
@@ -83,15 +83,16 @@ const styles = StyleSheet.create({
     marginBottom: moderateVerticalScale(18),
   },
   modalButton: {
-    borderRadius: moderateScale(10),
-    padding: moderateScale(10),
-    marginVertical: 5,
+    borderRadius: moderateScale(50),
+    padding: moderateScale(12),
+    marginVertical: moderateVerticalScale(8),
     width: '100%',
     alignItems: 'center',
     borderWidth: 1,
   },
   modalButtonText: {
     fontSize: scale(16),
+    fontWeight: '800',
   },
   modalCancelButton: {
     borderRadius: moderateScale(10),
@@ -102,6 +103,7 @@ const styles = StyleSheet.create({
   },
   modalCancelButtonText: {
     fontSize: scale(16),
+    fontWeight: '500',
   },
 });
 
