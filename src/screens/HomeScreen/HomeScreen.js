@@ -18,23 +18,26 @@ import CustomIcon from '../../components/CustomIcon';
 import {useNavigation} from '@react-navigation/native';
 import navigationString from '../../constants/navigationString';
 import firestore from '@react-native-firebase/firestore';
-import {getData} from '../../utils/AsyncStorage';
+import {getData, storeData} from '../../utils/AsyncStorage';
 
 const HomeScreen = ({route}) => {
   const [greeting, setGreeting] = useState('');
   const [username, setUsername] = useState('');
   const [userProfilePic, setUserProfilePic] = useState('');
+  const [engineeringTypes, setEngineeringTypes] = useState([]);
   const navigation = useNavigation();
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
 
   useEffect(() => {
     getUserInfo();
+    checkAndAddEngineeringTypes();
+    fetchEngineeringTypes();
   }, []);
 
   const getUserInfo = async () => {
     try {
-      const userId = await getData('userId');
+      const userId = await getData('userId'); // Retrieve userId from AsyncStorage
       if (userId) {
         const userDoc = await firestore().collection('Users').doc(userId).get();
         if (userDoc.exists) {
@@ -46,6 +49,9 @@ const HomeScreen = ({route}) => {
         }
       } else {
         console.log('User ID not found in AsyncStorage');
+        const newUserId = firestore().collection('Users').doc().id; // Generate new userId
+        await storeData('userId', newUserId); // Store userId in AsyncStorage
+        console.log('New User ID generated and stored: ', newUserId);
       }
     } catch (error) {
       console.error('Error fetching user info: ', error);
@@ -62,6 +68,53 @@ const HomeScreen = ({route}) => {
     {id: '7', text: 'Information and Technology Engineering'},
     {id: '8', text: 'Other Subjects'},
   ];
+
+  const checkAndAddEngineeringTypes = async () => {
+    try {
+      const engineeringTypesSnapshot = await firestore()
+        .collection('EngineeringTypes')
+        .get();
+      if (engineeringTypesSnapshot.empty) {
+        // Add data to Firestore
+        const batch = firestore().batch();
+        const userId = await getUserId(); // Get current user's userId
+        data.forEach(item => {
+          const docRef = firestore()
+            .collection('EngineeringTypes')
+            .doc(item.id);
+          batch.set(docRef, {...item, userId: userId}); // Add userId to each document
+        });
+        await batch.commit();
+        console.log('Engineering types added to Firestore');
+        // Mark that data has been added
+        await storeData('engineeringTypesAdded', 'true');
+      }
+    } catch (error) {
+      console.error('Error adding engineering types: ', error);
+    }
+  };
+
+  const fetchEngineeringTypes = async () => {
+    try {
+      const userId = await getUserId();
+      const engineeringTypesSnapshot = await firestore()
+        .collection('EngineeringTypes')
+        // .where('userId', '==', userId)
+        .get();
+      const engineeringTypesData = engineeringTypesSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log('Fetched Engineering Types: ', engineeringTypesData);
+      setEngineeringTypes(engineeringTypesData);
+    } catch (error) {
+      console.error('Error fetching engineering types: ', error);
+    }
+  };
+
+  const getUserId = async () => {
+    return await getData('userId');
+  };
 
   const keyExtractor = item => item.id.toString();
 
@@ -128,7 +181,7 @@ const HomeScreen = ({route}) => {
         </View>
         <View>
           <FlatList
-            data={data}
+            data={engineeringTypes}
             numColumns={2}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
