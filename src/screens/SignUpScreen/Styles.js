@@ -13,18 +13,13 @@ const styles = StyleSheet.create({
   marginContainer: {
     marginHorizontal: moderateScale(16),
   },
-  welcomeTextView: {
-    marginVertical: moderateVerticalScale(16),
-  },
+
   imageView: {
     alignItems: 'center',
-    marginTop: moderateScale(16),
-    marginHorizontal: moderateScale(16),
-    marginBottom: moderateVerticalScale(16),
   },
   image: {
-    width: moderateScale(120),
-    height: moderateScale(120),
+    height: moderateVerticalScale(150),
+    width: moderateScale(150),
   },
   inputView: {
     marginVertical: moderateVerticalScale(8),

@@ -1,4 +1,4 @@
-import React, {useState, useCallback, useEffect} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   Image,
   SafeAreaView,
@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Modal,
   PermissionsAndroid,
+  Dimensions,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import uuid from 'react-native-uuid';
@@ -28,7 +29,11 @@ import {auth} from '../../config/Firebase';
 import firestore from '@react-native-firebase/firestore';
 import {createUserWithEmailAndPassword} from 'firebase/auth';
 import {storeData} from '../../utils/AsyncStorage';
-import {moderateVerticalScale, scale} from 'react-native-size-matters';
+import {
+  moderateScale,
+  moderateVerticalScale,
+  scale,
+} from 'react-native-size-matters';
 import ImagePicker from 'react-native-image-crop-picker';
 
 const SignUpScreen = () => {
@@ -44,6 +49,7 @@ const SignUpScreen = () => {
   const [nameError, setNameError] = useState('');
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState(null);
+  const [imageError, setImageError] = useState(null);
 
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(ImagePath.LOGOBLACK);
@@ -51,56 +57,55 @@ const SignUpScreen = () => {
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
   const navigation = useNavigation();
 
-  useEffect(() => {
-    setEmailError('');
-    setPasswordError('');
-    setConfirmPasswordError('');
-    setNameError('');
-  }, []);
-
   const requestCameraPermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.CAMERA,
-        {
-          title: 'Camera Permission',
-          message: 'This app needs access to your camera.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Camera permission granted');
-        openImagePicker('camera');
-      } else {
-        console.log('Camera permission denied');
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: 'Camera Permission',
+            message: 'This app needs access to your camera.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          openImagePicker('camera');
+        } else {
+          console.log('Camera permission denied');
+        }
+      } catch (error) {
+        console.error('Error requesting camera permission: ', error);
       }
-    } catch (error) {
-      console.error('Error requesting camera permission: ', error);
+    } else {
+      openImagePicker('camera');
     }
   };
 
   const requestGalleryPermission = async () => {
-    try {
-      const granted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        {
-          title: 'Gallery Permission',
-          message: 'This app needs access to your gallery.',
-          buttonNeutral: 'Ask Me Later',
-          buttonNegative: 'Cancel',
-          buttonPositive: 'OK',
-        },
-      );
-      if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-        console.log('Gallery permission granted');
-        openImagePicker('gallery');
-      } else {
-        console.log('Gallery permission denied');
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          {
+            title: 'Gallery Permission',
+            message: 'This app needs access to your gallery.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          },
+        );
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          openImagePicker('gallery');
+        } else {
+          console.log('Gallery permission denied');
+        }
+      } catch (error) {
+        console.error('Error requesting gallery permission: ', error);
       }
-    } catch (error) {
-      console.error('Error requesting gallery permission: ', error);
+    } else {
+      openImagePicker('gallery');
     }
   };
 
@@ -113,7 +118,6 @@ const SignUpScreen = () => {
           height: 400,
           cropping: true,
         });
-        console.log('Image from camera:', selectedImage);
         handleCameraImage(selectedImage);
       } else if (type === 'gallery') {
         selectedImage = await ImagePicker.openPicker({
@@ -121,7 +125,6 @@ const SignUpScreen = () => {
           height: 400,
           cropping: true,
         });
-        console.log('Image from gallery:', selectedImage);
         handleGalleryImage(selectedImage);
       }
     } catch (error) {
@@ -130,10 +133,12 @@ const SignUpScreen = () => {
   };
 
   const handleCameraImage = selectedImage => {
+    setImageUri(selectedImage.path);
     setSelectedImage({uri: selectedImage.path});
   };
 
   const handleGalleryImage = selectedImage => {
+    setImageUri(selectedImage.path);
     setSelectedImage({uri: selectedImage.path});
   };
 
@@ -154,7 +159,6 @@ const SignUpScreen = () => {
         .get();
 
       if (!userSnapshot.empty) {
-        console.error('Sign-up error: Email is already in use');
         setEmailError('Email is already in use');
         setLoading(false);
         return;
@@ -169,7 +173,6 @@ const SignUpScreen = () => {
         password,
       );
       const user = userCredential.user;
-      console.log('User signed up successfully:', user);
 
       // Store user data in Firestore
       await firestore().collection('Users').doc(userId).set({
@@ -180,21 +183,18 @@ const SignUpScreen = () => {
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
 
-      console.log('User data saved to Firestore');
-
       // Store token in async storage
       const idToken = await user.getIdToken();
       await storeData('idToken', idToken);
       await storeData('accessToken', idToken);
 
-      // Navigate to the home screen with necessary params
       navigation.navigate(navigationString.DRAWERNAVIGATION, {
         screen: navigationString.HOMESCREEN,
         params: {
           userId: userId,
           email: user.email,
-          name: name, // Pass the name here
-          imageUri: imageUri, // Pass the image URI here
+          name: name,
+          imageUri: imageUri,
         },
       });
     } catch (error) {
@@ -205,7 +205,7 @@ const SignUpScreen = () => {
     }
   }, [email, password, name, imageUri, navigation]);
 
-  const validation = useCallback(() => {
+  const validation = () => {
     const emailRegex = /\S+@\S+\.\S+/;
     const passwordRegex =
       /^(?=.*\d)(?=.*[!@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
@@ -213,59 +213,61 @@ const SignUpScreen = () => {
     const passwordMaxLength = 30;
     const nameMaxLength = 50;
 
-    setEmailError('');
-    setPasswordError('');
-    setConfirmPasswordError('');
-    setNameError('');
+    let emailError = '';
+    let passwordError = '';
+    let confirmPasswordError = '';
+    let nameError = '';
+    let imageError = '';
 
     if (!name) {
-      setNameError('Please enter your Name');
+      nameError = 'Please enter your Name';
     } else if (name.length > nameMaxLength) {
-      setNameError(`Name must be less than ${nameMaxLength} characters`);
+      nameError = `Name must be less than ${nameMaxLength} characters`;
     }
 
     if (!email) {
-      setEmailError('Please enter Email Address');
+      emailError = 'Please enter Email Address';
     } else if (!emailRegex.test(email)) {
-      setEmailError('Invalid Email Address');
+      emailError = 'Invalid Email Address';
     } else if (email.length > emailMaxLength) {
-      setEmailError(
-        `Email Address must be less than ${emailMaxLength} characters`,
-      );
+      emailError = `Email Address must be less than ${emailMaxLength} characters`;
     }
 
     if (!password) {
-      setPasswordError('Please enter Password');
+      passwordError = 'Please enter Password';
     } else if (!passwordRegex.test(password)) {
-      setPasswordError(
-        'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one digit, and one special character',
-      );
+      passwordError =
+        'Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one digit, and one special character';
     } else if (password.length > passwordMaxLength) {
-      setPasswordError(
-        `Password must be less than ${passwordMaxLength} characters`,
-      );
+      passwordError = `Password must be less than ${passwordMaxLength} characters`;
     }
 
     if (!confirmPassword) {
-      setConfirmPasswordError('Please confirm your Password');
+      confirmPasswordError = 'Please confirm your Password';
     } else if (confirmPassword !== password) {
-      setConfirmPasswordError('Passwords do not match');
+      confirmPasswordError = 'Passwords do not match';
     }
 
-    if (!nameError && !emailError && !passwordError && !confirmPasswordError) {
+    if (!imageUri) {
+      imageError = 'Please select an image';
+    }
+
+    setEmailError(emailError);
+    setPasswordError(passwordError);
+    setConfirmPasswordError(confirmPasswordError);
+    setNameError(nameError);
+    setImageError(imageError);
+
+    if (
+      !nameError &&
+      !emailError &&
+      !passwordError &&
+      !confirmPasswordError &&
+      !imageError
+    ) {
       handleSignUp();
     }
-  }, [
-    name,
-    email,
-    password,
-    confirmPassword,
-    nameError,
-    emailError,
-    passwordError,
-    confirmPasswordError,
-    handleSignUp,
-  ]);
+  };
 
   const handleImagePicker = () => {
     setModalVisible(true);
@@ -285,7 +287,7 @@ const SignUpScreen = () => {
       style={{flex: 1}}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       contentContainerStyle={{
-        paddingBottom: moderateVerticalScale(120),
+        paddingBottom: moderateVerticalScale(125),
         backgroundColor: darkBackgroundColor,
       }}
       scrollEnabled={true}
@@ -309,7 +311,13 @@ const SignUpScreen = () => {
             />
           </View>
           <TouchableOpacity
-            style={styles.imageView}
+            style={[
+              styles.imageView,
+              {
+                backgroundColor: 'transperent',
+                borderColor: darkBorderColor,
+              },
+            ]}
             onPress={handleImagePicker}>
             <Image
               source={
@@ -319,21 +327,14 @@ const SignUpScreen = () => {
               }
               resizeMethod="auto"
               resizeMode="center"
-              style={[styles.image, {borderRadius: 50}]}
+              style={[styles.image, {borderRadius: moderateScale(300)}]}
             />
           </TouchableOpacity>
+          <CustomErrorMessage text={imageError} style={{color: 'red'}} />
 
-          <View style={styles.welcomeTextView}>
-            <CustomWelcomeText
-              text={'Sign up'}
-              inlineStyle={{color: darkmodeColor}}
-              fontFamily="Poppins"
-              fontSize={scale(24)}
-              fontWeight="700"
-            />
-          </View>
           <View style={styles.inputView}>
             <CustomTextInput
+              inputStyle={{width: '90%'}}
               placeholder="Full Name"
               onChangeText={text => setName(text)}
               placeholderTextColor={darkmodeColor}
@@ -341,6 +342,7 @@ const SignUpScreen = () => {
             <CustomErrorMessage text={nameError} style={{color: 'red'}} />
 
             <CustomTextInput
+              inputStyle={{width: '90%'}}
               placeholder="Email"
               onChangeText={text => setEmail(text)}
               placeholderTextColor={darkmodeColor}
@@ -350,6 +352,7 @@ const SignUpScreen = () => {
 
           <CustomTextInput
             secureTextEntry={secureTextEntry}
+            inputStyle={{width: '90%'}}
             placeholder="Password"
             onChangeText={text => setPassword(text)}
             rightIcon={secureTextEntry ? 'eye-off-outline' : 'eye-outline'}
@@ -380,7 +383,12 @@ const SignUpScreen = () => {
             {loading ? (
               <ActivityIndicator size="small" color={darkmodeColor} />
             ) : (
-              <CustomButton text={'Sign up'} onPress={handleSignUp} />
+              <CustomButton
+                text={'Sign up'}
+                onPress={() => {
+                  handleSignUp();
+                }}
+              />
             )}
           </View>
           <View style={styles.SignUpView}>
