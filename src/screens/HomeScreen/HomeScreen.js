@@ -7,24 +7,23 @@ import {
   SafeAreaView,
   FlatList,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
-import {
-  moderateScale,
-  moderateVerticalScale,
-  scale,
-} from 'react-native-size-matters';
+import {scale} from 'react-native-size-matters';
 import CustomTheme from '../../constants/CustomTheme';
 import CustomIcon from '../../components/CustomIcon';
 import {useNavigation} from '@react-navigation/native';
 import navigationString from '../../constants/navigationString';
 import firestore from '@react-native-firebase/firestore';
 import {getData, storeData} from '../../utils/AsyncStorage';
+import {styles} from './Styles';
 
 const HomeScreen = ({route}) => {
   const [greeting, setGreeting] = useState('');
   const [username, setUsername] = useState('');
   const [userProfilePic, setUserProfilePic] = useState('');
   const [engineeringTypes, setEngineeringTypes] = useState([]);
+  const [notification, setNotification] = useState('');
   const navigation = useNavigation();
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
@@ -37,7 +36,7 @@ const HomeScreen = ({route}) => {
 
   const getUserInfo = async () => {
     try {
-      const userId = await getData('userId'); // Retrieve userId from AsyncStorage
+      const userId = await getData('userId'); //  userId from AsyncStorage
       if (userId) {
         const userDoc = await firestore().collection('Users').doc(userId).get();
         if (userDoc.exists) {
@@ -75,7 +74,6 @@ const HomeScreen = ({route}) => {
         .collection('EngineeringTypes')
         .get();
       if (engineeringTypesSnapshot.empty) {
-        // Add data to Firestore
         const batch = firestore().batch();
         const userId = await getUserId(); // Get current user's userId
         data.forEach(item => {
@@ -85,8 +83,7 @@ const HomeScreen = ({route}) => {
           batch.set(docRef, {...item, userId: userId}); // Add userId to each document
         });
         await batch.commit();
-        console.log('Engineering types added to Firestore');
-        // Mark that data has been added
+
         await storeData('engineeringTypesAdded', 'true');
       }
     } catch (error) {
@@ -96,7 +93,6 @@ const HomeScreen = ({route}) => {
 
   const fetchEngineeringTypes = async () => {
     try {
-      const userId = await getUserId();
       const engineeringTypesSnapshot = await firestore()
         .collection('EngineeringTypes')
         // .where('userId', '==', userId)
@@ -105,7 +101,7 @@ const HomeScreen = ({route}) => {
         id: doc.id,
         ...doc.data(),
       }));
-      console.log('Fetched Engineering Types: ', engineeringTypesData);
+      // console.log('Fetched Engineering Types: ', engineeringTypesData);
       setEngineeringTypes(engineeringTypesData);
     } catch (error) {
       console.error('Error fetching engineering types: ', error);
@@ -151,6 +147,15 @@ const HomeScreen = ({route}) => {
     getCurrentGreeting();
   }, []);
 
+  const handlePressNotification = () => {
+    if (notification) {
+      Alert.alert('Notification is Comming');
+    } else {
+      // Alert.alert('');
+    }
+    setNotification(!notification);
+  };
+
   return (
     <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
       <SafeAreaView style={styles.marginContainer}>
@@ -171,12 +176,23 @@ const HomeScreen = ({route}) => {
               {greeting}
             </Text>
           </View>
-          <CustomIcon color={darkmodeColor} name={'book'} size={scale(24)} />
+          <View>
+            <TouchableOpacity
+              onPress={() => {
+                handlePressNotification();
+              }}>
+              <CustomIcon
+                color={darkmodeColor}
+                name={notification ? 'bell-outline' : 'bell-badge-outline'}
+                size={scale(24)}
+                type="MaterialCommunityIcons"
+              />
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={[styles.nextView, {backgroundColor: darkBackgroundColor}]}>
           <Text style={[styles.text, {color: darkmodeColor}]}>
-            This is some text that will span over three lines to give an example
-            of how the layout will look.
+            Chose your Course and get all details and materials
           </Text>
         </View>
         <View>
@@ -191,59 +207,5 @@ const HomeScreen = ({route}) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  marginContainer: {
-    marginHorizontal: moderateScale(16),
-  },
-  userProfileContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: moderateScale(16),
-    justifyContent: 'space-between',
-    marginVertical: moderateVerticalScale(8),
-  },
-  profileImage: {
-    width: moderateScale(60),
-    height: moderateVerticalScale(60),
-    borderRadius: moderateScale(50),
-    marginRight: moderateScale(10),
-  },
-  userInfo: {
-    flex: 1,
-  },
-  userName: {
-    fontSize: scale(18),
-    fontWeight: 'bold',
-  },
-  greeting: {
-    fontSize: scale(16),
-  },
-  nextView: {
-    padding: moderateScale(16),
-    borderRadius: moderateScale(8),
-  },
-  text: {
-    fontSize: scale(16),
-    lineHeight: 24,
-  },
-  card: {
-    flex: 1,
-    padding: moderateScale(16),
-    marginVertical: moderateVerticalScale(8),
-    marginHorizontal: moderateScale(8),
-    borderRadius: moderateScale(8),
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-  },
-  cardText: {
-    fontSize: scale(14),
-    textAlign: 'center',
-  },
-});
 
 export default HomeScreen;
