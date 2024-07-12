@@ -15,11 +15,17 @@ const styles = StyleSheet.create({
   },
 
   imageView: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginHorizontal: moderateScale(16),
+    justifyContent: 'space-between',
+    marginVertical: moderateVerticalScale(8),
   },
   image: {
-    height: moderateVerticalScale(150),
-    width: moderateScale(150),
+    width: moderateScale(60),
+    height: moderateVerticalScale(60),
+    borderRadius: moderateScale(50),
+    marginRight: moderateScale(10),
   },
   inputView: {
     marginVertical: moderateVerticalScale(8),
