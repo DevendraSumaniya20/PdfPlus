@@ -31,6 +31,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [imageUri, setImageUri] = useState(null);
 
   const {darkmodeColor, darkBackgroundColor} = CustomTheme();
   const navigation = useNavigation();
@@ -44,6 +45,9 @@ const LoginScreen = () => {
   const checkTokens = useCallback(async () => {
     try {
       const accessToken = await getData('accessToken');
+      const storedImageUri = await getData('imageUri');
+      setImageUri(storedImageUri);
+
       if (accessToken) {
         navigation.navigate(navigationString.DRAWERNAVIGATION, {
           screen: navigationString.HOMESCREEN,
@@ -122,16 +126,29 @@ const LoginScreen = () => {
         .where('email', '==', reduxAuth.email)
         .get();
       if (!snapshot.empty) {
-        const userId = snapshot.docs[0].data().userId;
+        const userData = snapshot.docs[0].data();
+        const userId = userData.userId;
+        const name = userData.name;
+        const imageUri = userData.imageUri;
+
         await storeData('userId', userId);
-        console.log('User data:', snapshot.docs[0].data());
+        await storeData('imageUri', imageUri); // store image URI in AsyncStorage
+        setImageUri(imageUri); // update state with the new image URI
+
+        console.log('User data:', userData);
+
+        navigation.navigate(navigationString.DRAWERNAVIGATION, {
+          screen: navigationString.HOMESCREEN,
+          params: {
+            userId: userId,
+            email: reduxAuth.email,
+            name: name,
+            imageUri: imageUri,
+          },
+        });
       } else {
         Alert.alert('User Not Found!');
       }
-
-      navigation.navigate(navigationString.DRAWERNAVIGATION, {
-        screen: navigationString.HOMESCREEN,
-      });
     } catch (error) {
       console.error('Sign-in error:', error.message);
       Alert.alert('Sign-in Error', error.message);
@@ -151,16 +168,25 @@ const LoginScreen = () => {
       <View style={styles.contentContainer}>
         <View style={styles.marginContainer}>
           <View style={styles.imageView}>
-            <Image
-              source={
-                darkmodeColor == '#000'
-                  ? ImagePath.LOGOBLACK
-                  : ImagePath.LOGOWHITE
-              }
-              resizeMethod="auto"
-              resizeMode="center"
-              style={styles.image}
-            />
+            {imageUri ? (
+              <Image
+                source={{uri: imageUri}}
+                resizeMethod="auto"
+                resizeMode="center"
+                style={styles.image}
+              />
+            ) : (
+              <Image
+                source={
+                  darkmodeColor === '#000'
+                    ? ImagePath.LOGOBLACK
+                    : ImagePath.LOGOWHITE
+                }
+                resizeMethod="auto"
+                resizeMode="center"
+                style={styles.image}
+              />
+            )}
           </View>
           <View style={styles.welcomeTextView}>
             <CustomWelcomeText
