@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import bookSearch from '../../data/BookSearch';
+import firestore from '@react-native-firebase/firestore';
 import CustomTheme from '../../constants/CustomTheme';
 import {
   moderateScale,
@@ -19,8 +19,9 @@ import {
 import CustomSearch from '../../components/CustomSearch';
 import navigationString from '../../constants/navigationString';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import bookSearch from '../../data/BookSearch';
 
-const DiscoverScreen = ({navigation, route}) => {
+const DiscoverScreen = ({navigation}) => {
   const [bookData, setBookData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,10 +31,47 @@ const DiscoverScreen = ({navigation, route}) => {
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
 
   useEffect(() => {
-    setBookData(bookSearch);
-    setFilteredData(bookSearch);
-    setLoading(false);
+    checkAndAddBooks();
   }, []);
+
+  const checkAndAddBooks = async () => {
+    const booksSnapshot = await firestore().collection('discover').get();
+    if (booksSnapshot.empty) {
+      addBooksToFirestore();
+    } else {
+      fetchBooks();
+    }
+  };
+
+  const addBooksToFirestore = async () => {
+    const batch = firestore().batch();
+    const collectionRef = firestore().collection('discover');
+
+    bookSearch.forEach(book => {
+      const docRef = collectionRef.doc();
+      batch.set(docRef, book);
+    });
+
+    await batch.commit();
+    console.log('Books added to Firestore!');
+    fetchBooks();
+  };
+
+  const fetchBooks = async () => {
+    try {
+      const booksCollection = await firestore().collection('discover').get();
+      const booksList = booksCollection.docs.map(doc => ({
+        ...doc.data(),
+        bookId: doc.id,
+      }));
+      setBookData(booksList);
+      setFilteredData(booksList);
+    } catch (error) {
+      console.error('Error fetching books: ', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     handleFilterAndSort();

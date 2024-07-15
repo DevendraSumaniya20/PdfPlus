@@ -10,7 +10,6 @@ import {
   ActivityIndicator,
   Modal,
   PermissionsAndroid,
-  Dimensions,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import uuid from 'react-native-uuid';
@@ -280,7 +279,10 @@ const SignUpScreen = () => {
       style={{flex: 1}}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       contentContainerStyle={{
-        paddingBottom: moderateVerticalScale(125),
+        paddingBottom:
+          Platform.OS === 'android'
+            ? moderateVerticalScale(150)
+            : moderateVerticalScale(200),
         backgroundColor: darkBackgroundColor,
       }}
       scrollEnabled={true}

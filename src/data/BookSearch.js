@@ -11,6 +11,8 @@ const bookSearch = [
     year: 1958,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 7,
+    trendingScore: 8,
   },
   {
     bookId: 2,
@@ -24,6 +26,8 @@ const bookSearch = [
     year: 1836,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 6,
+    trendingScore: 2,
   },
   {
     bookId: 3,
@@ -37,6 +41,8 @@ const bookSearch = [
     year: 1315,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 4,
+    trendingScore: 8,
   },
   {
     bookId: 4,
@@ -50,6 +56,8 @@ const bookSearch = [
     year: 1700,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 5,
+    trendingScore: 5,
   },
   {
     bookId: 5,
@@ -63,6 +71,8 @@ const bookSearch = [
     year: 600,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 10,
+    trendingScore: 8,
   },
   {
     bookId: 6,
@@ -76,6 +86,8 @@ const bookSearch = [
     year: 1200,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 1,
+    trendingScore: 4,
   },
   {
     bookId: 7,
@@ -89,6 +101,8 @@ const bookSearch = [
     year: 1350,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 10,
+    trendingScore: 4,
   },
   {
     bookId: 8,
@@ -102,6 +116,8 @@ const bookSearch = [
     year: 1813,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 3,
+    trendingScore: 9,
   },
   {
     bookId: 9,
@@ -115,6 +131,8 @@ const bookSearch = [
     year: 1835,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 7,
+    trendingScore: 2,
   },
   {
     bookId: 10,
@@ -128,6 +146,8 @@ const bookSearch = [
     year: 1952,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 6,
+    trendingScore: 2,
   },
   {
     bookId: 11,
@@ -141,6 +161,8 @@ const bookSearch = [
     year: 1351,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 5,
+    trendingScore: 2,
   },
   {
     bookId: 12,
@@ -154,6 +176,8 @@ const bookSearch = [
     year: 1965,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 1,
+    trendingScore: 5,
   },
   {
     bookId: 13,
@@ -167,6 +191,8 @@ const bookSearch = [
     year: 1847,
     pdfUrl:
       'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
+    popularity: 8,
+    trendingScore: 4,
   },
 ];
 
