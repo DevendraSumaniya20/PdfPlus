@@ -6,7 +6,7 @@ import {
   Text,
   View,
   Image,
-  Platform,
+  TouchableOpacity,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import bookSearch from '../../data/BookSearch';
@@ -17,12 +17,15 @@ import {
   scale,
 } from 'react-native-size-matters';
 import CustomSearch from '../../components/CustomSearch';
+import navigationString from '../../constants/navigationString';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
-const DiscoverScreen = () => {
+const DiscoverScreen = ({navigation, route}) => {
   const [bookData, setBookData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
+  const [sortOption, setSortOption] = useState('popular');
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
 
@@ -33,22 +36,70 @@ const DiscoverScreen = () => {
   }, []);
 
   useEffect(() => {
+    handleFilterAndSort();
+  }, [searchText, bookData, sortOption]);
+
+  const handleFilterAndSort = () => {
+    let newData = [...bookData];
+
     if (searchText) {
-      const newData = bookData.filter(item =>
+      newData = newData.filter(item =>
         item.title.toLowerCase().includes(searchText.toLowerCase()),
       );
-      setFilteredData(newData);
-    } else {
-      setFilteredData(bookData);
     }
-  }, [searchText, bookData]);
+
+    switch (sortOption) {
+      case 'year':
+        newData.sort((a, b) => b.year - a.year);
+        break;
+      case 'a-z':
+        newData.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case 'z-a':
+        newData.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+      case 'popular':
+        newData.sort((a, b) => b.popularity - a.popularity);
+        break;
+      case 'trending':
+        newData.sort((a, b) => b.trendingScore - a.trendingScore);
+        break;
+      default:
+        break;
+    }
+
+    setFilteredData(newData);
+  };
+
+  const renderSortButton = (title, value, iconName) => (
+    <TouchableOpacity
+      style={[
+        styles.sortButton,
+        {borderColor: sortOption === value ? darkmodeColor : darkBorderColor},
+      ]}
+      onPress={() => setSortOption(value)}>
+      <Icon
+        name={iconName}
+        size={scale(12)}
+        color={sortOption === value ? darkmodeColor : darkBorderColor}
+      />
+      <Text style={{color: darkmodeColor, marginLeft: moderateScale(6)}}>
+        {title}
+      </Text>
+    </TouchableOpacity>
+  );
 
   const renderItem = ({item}) => (
-    <View
+    <TouchableOpacity
       style={[
         styles.card,
         {backgroundColor: darkBackgroundColor, borderColor: darkBorderColor},
-      ]}>
+      ]}
+      onPress={() => {
+        navigation.navigate(navigationString.PDFVIEWERSCREEN, {
+          filePath: item.pdfUrl,
+        });
+      }}>
       <Image
         source={item.imageLink}
         style={styles.bookImage}
@@ -75,7 +126,7 @@ const DiscoverScreen = () => {
           Pages: {item.pages}
         </Text>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -92,6 +143,14 @@ const DiscoverScreen = () => {
             textInputStyle={{color: darkmodeColor}}
             value={searchText}
           />
+        </View>
+
+        <View style={styles.sortContainer}>
+          {renderSortButton('Popular', 'popular', 'star')}
+          {renderSortButton('Trending', 'trending', 'line-chart')}
+          {renderSortButton('Year', 'year', 'calendar')}
+          {renderSortButton('A-Z', 'a-z', 'sort-alpha-asc')}
+          {renderSortButton('Z-A', 'z-a', 'sort-alpha-desc')}
         </View>
 
         {loading ? (
@@ -122,6 +181,18 @@ const styles = StyleSheet.create({
   searchView: {
     marginVertical: moderateVerticalScale(8),
   },
+  sortContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    marginVertical: moderateVerticalScale(16),
+  },
+  sortButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: moderateScale(4),
+    borderRadius: moderateScale(5),
+    borderWidth: 1,
+  },
   card: {
     flexDirection: 'row',
     marginBottom: moderateVerticalScale(10),
@@ -147,7 +218,7 @@ const styles = StyleSheet.create({
   bookTitle: {
     fontSize: scale(16),
     marginBottom: moderateVerticalScale(6),
-    fontWeight: '700',
+    fontWeight: 'bold',
   },
   bookAuthor: {
     fontSize: scale(14),

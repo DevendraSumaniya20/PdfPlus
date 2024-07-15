@@ -9,6 +9,8 @@ const bookSearch = [
     pages: 209,
     title: 'Things Fall Apart',
     year: 1958,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
   {
     bookId: 2,
@@ -20,6 +22,8 @@ const bookSearch = [
     pages: 784,
     title: 'Fairy tales',
     year: 1836,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
   {
     bookId: 3,
@@ -31,6 +35,8 @@ const bookSearch = [
     pages: 928,
     title: 'The Divine Comedy',
     year: 1315,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
   {
     bookId: 4,
@@ -42,6 +48,8 @@ const bookSearch = [
     pages: 160,
     title: 'The Epic Of Gilgamesh',
     year: 1700,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
   {
     bookId: 5,
@@ -53,6 +61,8 @@ const bookSearch = [
     pages: 176,
     title: 'The Book Of Job',
     year: 600,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
   {
     bookId: 6,
@@ -64,6 +74,8 @@ const bookSearch = [
     pages: 288,
     title: 'One Thousand and One Nights',
     year: 1200,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
   {
     bookId: 7,
@@ -75,6 +87,8 @@ const bookSearch = [
     pages: 384,
     title: "Nj\u00e1l's Saga",
     year: 1350,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
   {
     bookId: 8,
@@ -86,6 +100,8 @@ const bookSearch = [
     pages: 226,
     title: 'Pride and Prejudice',
     year: 1813,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
   {
     bookId: 9,
@@ -97,6 +113,8 @@ const bookSearch = [
     pages: 443,
     title: 'Le P\u00e8re Goriot',
     year: 1835,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
   {
     bookId: 10,
@@ -108,6 +126,8 @@ const bookSearch = [
     pages: 256,
     title: 'Molloy, Malone Dies, The Unnamable, the trilogy',
     year: 1952,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
   {
     bookId: 11,
@@ -119,6 +139,8 @@ const bookSearch = [
     pages: 1024,
     title: 'The Decameron',
     year: 1351,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
   {
     bookId: 12,
@@ -130,6 +152,8 @@ const bookSearch = [
     pages: 224,
     title: 'Ficciones',
     year: 1965,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
   {
     bookId: 13,
@@ -141,6 +165,8 @@ const bookSearch = [
     pages: 342,
     title: 'Wuthering Heights',
     year: 1847,
+    pdfUrl:
+      'https://pdfdrive.com.co/wp-content/pdfh/rich-dad-poor-dad-PDFdrive.com.co.pdf',
   },
 ];
 

@@ -26,7 +26,7 @@ const PdfViewerScreen = ({route, navigation}) => {
   const [pageInput, setPageInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
 
-  const {filePath} = route.params;
+  const {filePath, item} = route.params;
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
 
   const pdfRef = useRef(null);
@@ -139,6 +139,7 @@ const PdfViewerScreen = ({route, navigation}) => {
           </TouchableOpacity>
         </View>
         <Pdf
+          trustAllCerts={false}
           ref={pdfRef}
           source={{uri: filePath}}
           onLoadComplete={numberOfPages => {
