@@ -4,19 +4,25 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
-  TextInput,
   View,
   Image,
+  Platform,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
 import bookSearch from '../../data/BookSearch';
 import CustomTheme from '../../constants/CustomTheme';
+import {
+  moderateScale,
+  moderateVerticalScale,
+  scale,
+} from 'react-native-size-matters';
+import CustomSearch from '../../components/CustomSearch';
 
 const DiscoverScreen = () => {
   const [bookData, setBookData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchText, setSearchText] = useState('');
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
 
@@ -26,66 +32,68 @@ const DiscoverScreen = () => {
     setLoading(false);
   }, []);
 
-  const handleSearch = query => {
-    setSearchQuery(query);
-    if (query) {
-      const filteredBooks = bookData.filter(
-        book =>
-          book.title.toLowerCase().includes(query.toLowerCase()) ||
-          book.author.toLowerCase().includes(query.toLowerCase()),
+  useEffect(() => {
+    if (searchText) {
+      const newData = bookData.filter(item =>
+        item.title.toLowerCase().includes(searchText.toLowerCase()),
       );
-      setFilteredData(filteredBooks);
+      setFilteredData(newData);
     } else {
       setFilteredData(bookData);
     }
-  };
+  }, [searchText, bookData]);
 
-  const renderItem = ({item}) => {
-    return (
-      <View style={[styles.card, {backgroundColor: darkBackgroundColor}]}>
-        <Image
-          source={item.imageLink}
-          style={styles.bookImage}
-          resizeMethod="auto"
-          resizeMode="cover"
-        />
-        <View style={styles.bookDetails}>
-          <Text style={[styles.bookText, {color: darkmodeColor}]}>
-            {item.title}
-          </Text>
-          <Text style={[styles.bookText, {color: darkmodeColor}]}>
-            by {item.author}
-          </Text>
-          <Text style={[styles.bookText, {color: darkmodeColor}]}>
-            Country: {item.country}
-          </Text>
-          <Text style={[styles.bookText, {color: darkmodeColor}]}>
-            Language: {item.language}
-          </Text>
-          <Text style={[styles.bookText, {color: darkmodeColor}]}>
-            Year: {item.year}
-          </Text>
-          <Text style={[styles.bookText, {color: darkmodeColor}]}>
-            Pages: {item.pages}
-          </Text>
-        </View>
+  const renderItem = ({item}) => (
+    <View
+      style={[
+        styles.card,
+        {backgroundColor: darkBackgroundColor, borderColor: darkBorderColor},
+      ]}>
+      <Image
+        source={item.imageLink}
+        style={styles.bookImage}
+        resizeMethod="auto"
+        resizeMode="cover"
+      />
+      <View style={styles.bookDetails}>
+        <Text style={[styles.bookTitle, {color: darkmodeColor}]}>
+          {item.title}
+        </Text>
+        <Text style={[styles.bookAuthor, {color: darkmodeColor}]}>
+          by {item.author}
+        </Text>
+        <Text style={[styles.bookInfo, {color: darkmodeColor}]}>
+          Country: {item.country}
+        </Text>
+        <Text style={[styles.bookInfo, {color: darkmodeColor}]}>
+          Language: {item.language}
+        </Text>
+        <Text style={[styles.bookInfo, {color: darkmodeColor}]}>
+          Year: {item.year}
+        </Text>
+        <Text style={[styles.bookInfo, {color: darkmodeColor}]}>
+          Pages: {item.pages}
+        </Text>
       </View>
-    );
-  };
+    </View>
+  );
 
   return (
     <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
       <SafeAreaView style={styles.marginContainer}>
-        <TextInput
-          style={[
-            styles.searchBar,
-            {borderColor: darkBorderColor, color: darkmodeColor},
-          ]}
-          placeholder="Search by title or author"
-          placeholderTextColor={darkmodeColor}
-          value={searchQuery}
-          onChangeText={handleSearch}
-        />
+        <View style={styles.searchView}>
+          <CustomSearch
+            iconColor2={darkmodeColor}
+            iconName2={'search'}
+            onChangeText={text => setSearchText(text)}
+            placeholder={'Search your Dream book'}
+            placeholderTextColor={darkmodeColor}
+            size={scale(16)}
+            textInputStyle={{color: darkmodeColor}}
+            value={searchText}
+          />
+        </View>
+
         {loading ? (
           <ActivityIndicator color={darkmodeColor} size={'large'} />
         ) : (
@@ -93,6 +101,10 @@ const DiscoverScreen = () => {
             data={filteredData}
             renderItem={renderItem}
             keyExtractor={item => item.bookId.toString()}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              paddingBottom: moderateVerticalScale(80),
+            }}
           />
         )}
       </SafeAreaView>
@@ -105,40 +117,46 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   marginContainer: {
-    margin: 10,
+    margin: moderateScale(16),
   },
-  searchBar: {
-    height: 40,
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    marginBottom: 20,
+  searchView: {
+    marginVertical: moderateVerticalScale(8),
   },
   card: {
     flexDirection: 'row',
-    marginBottom: 10,
-    padding: 10,
-    borderRadius: 10,
+    marginBottom: moderateVerticalScale(10),
+    padding: moderateScale(10),
+    borderRadius: moderateScale(10),
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowOffset: {width: 0, height: 1},
     shadowRadius: 3,
     elevation: 2,
+    borderWidth: 1,
   },
   bookImage: {
-    width: 100,
-    height: 150,
-    borderRadius: 10,
-    marginRight: 10,
+    width: moderateScale(100),
+    height: moderateVerticalScale(150),
+    borderRadius: moderateScale(10),
+    marginRight: moderateScale(16),
   },
   bookDetails: {
     flex: 1,
     justifyContent: 'center',
   },
-  bookText: {
-    fontSize: 16,
-    marginBottom: 5,
-    fontWeight: '500',
+  bookTitle: {
+    fontSize: scale(16),
+    marginBottom: moderateVerticalScale(6),
+    fontWeight: '700',
+  },
+  bookAuthor: {
+    fontSize: scale(14),
+    marginBottom: moderateVerticalScale(4),
+    fontWeight: '600',
+  },
+  bookInfo: {
+    fontSize: scale(12),
+    marginBottom: moderateVerticalScale(4),
   },
 });
 

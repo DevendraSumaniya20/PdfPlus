@@ -1,18 +1,14 @@
 import React from 'react';
 import {
+  Platform,
   StyleSheet,
-  Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
 import CustomIcon from './CustomIcon';
-import Color from '../constants/Color';
-import {
-  moderateScale,
-  moderateVerticalScale,
-  scale,
-} from 'react-native-size-matters';
+import {moderateScale, scale} from 'react-native-size-matters';
+import CustomTheme from '../constants/CustomTheme';
 
 const CustomSearch = ({
   placeholder,
@@ -27,28 +23,57 @@ const CustomSearch = ({
   iconColor2,
   textInputStyle,
   value,
+  onPress,
 }) => {
+  const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
+
   return (
-    <View style={styles.container}>
-      <View style={styles.textInputContainer}>
-        <CustomIcon name={iconName} color={iconColor} size={size} type={type} />
+    <View
+      style={[
+        styles.container,
+        {backgroundColor: darkBackgroundColor, borderColor: darkBorderColor},
+      ]}>
+      <View
+        style={[
+          styles.textInputContainer,
+          {backgroundColor: darkBackgroundColor, borderColor: darkBorderColor},
+        ]}>
+        {value ? null : (
+          <CustomIcon
+            name={iconName}
+            color={iconColor}
+            size={size}
+            type={type}
+          />
+        )}
         <TextInput
           placeholder={placeholder}
           placeholderTextColor={placeholderTextColor}
           onChangeText={onChangeText}
-          style={[styles.textInput, textInputStyle]}
+          style={[
+            styles.textInput,
+            textInputStyle,
+            {
+              borderColor: darkBorderColor,
+              backgroundColor: darkBackgroundColor,
+            },
+          ]}
           value={value}
           autoCapitalize="none"
           autoComplete="off"
           autoCorrect={false}
           autoFocus={false}
         />
-        <CustomIcon
-          name={iconName2}
-          color={iconColor2}
-          size={size}
-          type={type2}
-        />
+        <TouchableOpacity onPress={onPress}>
+          {value ? null : (
+            <CustomIcon
+              name={iconName2}
+              color={iconColor2}
+              size={size}
+              type={type2}
+            />
+          )}
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -57,18 +82,17 @@ const CustomSearch = ({
 export default CustomSearch;
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: Color.GRAY,
-  },
+  container: {},
   textInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-evenly',
-    paddingVertical: moderateVerticalScale(6),
+    padding: Platform.OS === 'ios' ? moderateScale(8) : moderateScale(4),
+    borderWidth: 1,
+    borderRadius: moderateScale(10),
   },
   textInput: {
     flex: 1,
-    color: Color.WHITE,
     fontSize: scale(16),
     marginLeft: moderateScale(8),
     fontWeight: '600',
