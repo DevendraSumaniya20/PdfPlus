@@ -129,11 +129,13 @@ const SignUpScreen = () => {
   const handleCameraImage = selectedImage => {
     setImageUri(selectedImage.path);
     setSelectedImage({uri: selectedImage.path});
+    setModalVisible(false);
   };
 
   const handleGalleryImage = selectedImage => {
     setImageUri(selectedImage.path);
     setSelectedImage({uri: selectedImage.path});
+    setModalVisible(false);
   };
 
   const handleSignUp = useCallback(async () => {
