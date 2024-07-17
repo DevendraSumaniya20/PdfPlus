@@ -1,10 +1,19 @@
 import React, {useState} from 'react';
-import {View, TouchableOpacity, Alert, Text, StyleSheet} from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  Alert,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  SafeAreaView,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {useDispatch} from 'react-redux';
 import {auth} from '../../config/Firebase';
 import navigationString from '../../constants/navigationString';
 import {moderateScale, moderateVerticalScale} from 'react-native-size-matters';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 import {
   clearCredentials,
@@ -16,7 +25,7 @@ import CustomTheme from '../../constants/CustomTheme';
 const SettingScreen = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
 
-  const {darkBackgroundColor, darkBorderColor, darkmodeColor} = CustomTheme();
+  const {darkBackgroundColor, darkmodeColor} = CustomTheme();
   const dispatch = useDispatch();
 
   const signOut = async () => {
@@ -46,18 +55,49 @@ const SettingScreen = ({navigation}) => {
     ]);
   };
 
+  const MenuItem = ({iconName, text, onPress}) => (
+    <TouchableOpacity
+      style={[styles.menuItem, {backgroundColor: darkBackgroundColor}]}
+      onPress={onPress}>
+      <Icon name={iconName} size={moderateScale(24)} color={darkmodeColor} />
+      <Text style={[styles.menuText, {color: darkmodeColor}]}>{text}</Text>
+    </TouchableOpacity>
+  );
+
   return (
-    <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
-      <View style={{marginHorizontal: moderateScale(16)}}>
-        <TouchableOpacity
-          style={[styles.menuItem, {backgroundColor: darkBackgroundColor}]}
-          onPress={signOut}>
-          <Text style={[styles.menuText, {color: darkmodeColor}]}>
-            Sign Out
-          </Text>
-        </TouchableOpacity>
+    <SafeAreaView
+      style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
+      {isLoading && <ActivityIndicator size="large" color={darkmodeColor} />}
+      <View style={styles.marginContainer}>
+        <View style={styles.menuContainer}>
+          <MenuItem
+            iconName="person"
+            text="Profile"
+            onPress={() => navigation.push(navigationString.PROFILESCREEN)}
+          />
+          <MenuItem
+            iconName="notifications"
+            text="Manage Notifications"
+            onPress={() =>
+              navigation.push(navigationString.MANAGENOTIFICATIONSCREEN)
+            }
+          />
+
+          <MenuItem
+            iconName="info"
+            text="About Us"
+            onPress={() => navigation.push(navigationString.ABOUTSCREEN)}
+          />
+          <MenuItem
+            iconName="feedback"
+            text="Feedback"
+            onPress={() => navigation.push(navigationString.FEEDBACKSCREEN)}
+          />
+
+          <MenuItem iconName="logout" text="Sign Out" onPress={signOut} />
+        </View>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -67,11 +107,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  marginContainer: {
+    margin: moderateScale(16),
+  },
+  menuContainer: {
+    marginHorizontal: moderateScale(4),
+  },
   menuText: {
-    fontSize: moderateScale(18),
+    fontSize: moderateScale(16),
     fontWeight: '600',
+    marginLeft: moderateScale(12),
   },
   menuItem: {
-    marginTop: moderateVerticalScale(52),
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: moderateVerticalScale(20),
+    padding: moderateScale(10),
+    borderRadius: moderateScale(8),
+    borderBottomColor: 'rgb(184, 174, 174)',
+    borderBottomWidth: 0.5,
   },
 });

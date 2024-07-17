@@ -14,6 +14,10 @@ import ImpMaterialScreen from '../screens/Learning/ImpMaterialScreen/ImpMaterial
 import PaperSolutionScreen from '../screens/Learning/PaperSolutionScreen/PaperSolutionScreen';
 import CourseScreen from '../screens/Learning/CourseScreen/CourseScreen';
 import PdfViewerScreen from '../screens/Learning/PdfViewerScreen/PdfViewerScreen';
+import ProfileScreen from '../screens/SettingScreen/OtherScreens/ProfileScreen/ProfileScreen';
+import ManageNotificationScreen from '../screens/SettingScreen/OtherScreens/ManageNotificationScreen/ManageNotificationScreen';
+import AboutScreen from '../screens/SettingScreen/OtherScreens/AboutScreen/AboutScreen';
+import FeedbackScreen from '../screens/SettingScreen/OtherScreens/FeedbackScreen/FeedbackScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -64,6 +68,22 @@ const Navigation = () => {
         <Stack.Screen
           name={navigationString.PDFVIEWERSCREEN}
           component={PdfViewerScreen}
+        />
+        <Stack.Screen
+          name={navigationString.PROFILESCREEN}
+          component={ProfileScreen}
+        />
+        <Stack.Screen
+          name={navigationString.MANAGENOTIFICATIONSCREEN}
+          component={ManageNotificationScreen}
+        />
+        <Stack.Screen
+          name={navigationString.ABOUTSCREEN}
+          component={AboutScreen}
+        />
+        <Stack.Screen
+          name={navigationString.FEEDBACKSCREEN}
+          component={FeedbackScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

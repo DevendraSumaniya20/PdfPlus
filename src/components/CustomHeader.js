@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTextTitle: {
-    fontWeight: '500',
+    fontWeight: '800',
     textAlign: 'center',
     fontSize: scale(18),
     flex: 1,

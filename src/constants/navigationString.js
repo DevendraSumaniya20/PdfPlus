@@ -16,4 +16,8 @@ export default {
   IMPMATERIALSCREEN: 'ImpMaterialScreen',
   PDFVIEWERSCREEN: 'PdfViewerScreen',
   SETTINGSCREEN: 'SettingScreen',
+  ABOUTSCREEN: 'AboutScreen',
+  MANAGENOTIFICATIONSCREEN: 'ManageNotificationScreen',
+  PROFILESCREEN: 'ProfileScreen',
+  FEEDBACKSCREEN: 'FeedbackScreen',
 };
