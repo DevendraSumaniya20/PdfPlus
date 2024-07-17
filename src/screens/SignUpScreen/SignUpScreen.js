@@ -283,8 +283,8 @@ const SignUpScreen = () => {
       contentContainerStyle={{
         paddingBottom:
           Platform.OS === 'android'
-            ? moderateVerticalScale(150)
-            : moderateVerticalScale(200),
+            ? moderateVerticalScale(210)
+            : moderateVerticalScale(210),
         backgroundColor: darkBackgroundColor,
       }}
       scrollEnabled={true}
@@ -363,7 +363,9 @@ const SignUpScreen = () => {
             onChangeText={text => setConfirmPassword(text)}
             secureTextEntry={secureConfirmTextEntry}
             placeholderTextColor={darkmodeColor}
-            rightIcon={secureTextEntry ? 'eye-off-outline' : 'eye-outline'}
+            rightIcon={
+              secureConfirmTextEntry ? 'eye-off-outline' : 'eye-outline'
+            }
             onPressRight={() =>
               setSecureConfirmTextEntry(!secureConfirmTextEntry)
             }
