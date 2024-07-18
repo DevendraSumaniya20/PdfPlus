@@ -7,7 +7,6 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import {signInWithEmailAndPassword} from 'firebase/auth';
 import {useDispatch, useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
@@ -25,6 +24,7 @@ import ImagePath from '../../constants/ImagePath';
 import {auth} from '../../config/Firebase';
 import {getData, storeData} from '../../utils/AsyncStorage';
 import firestore from '@react-native-firebase/firestore';
+import {setUser} from '../../redux/slices/userSlice';
 
 const LoginScreen = () => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
@@ -36,7 +36,14 @@ const LoginScreen = () => {
   const {darkmodeColor, darkBackgroundColor} = CustomTheme();
   const navigation = useNavigation();
   const dispatch = useDispatch();
+  const user = useSelector(state => state.user);
   const reduxAuth = useSelector(state => state.auth);
+
+  useEffect(() => {
+    if (user.email) {
+      dispatch(setEmail(user.email));
+    }
+  }, [user.email, dispatch]);
 
   useEffect(() => {
     checkTokens();
@@ -115,7 +122,6 @@ const LoginScreen = () => {
         reduxAuth.password,
       );
       const user = userCredential.user;
-      console.log('User signed in successfully:', user);
 
       const idToken = await user.getIdToken();
       await storeData('idToken', idToken);
@@ -132,19 +138,20 @@ const LoginScreen = () => {
         const imageUri = userData.imageUri;
 
         await storeData('userId', userId);
-        await storeData('imageUri', imageUri); // store image URI in AsyncStorage
-        setImageUri(imageUri); // update state with the new image URI
+        await storeData('imageUri', imageUri);
+        setImageUri(imageUri);
 
-        console.log('User data:', userData);
+        const userToDispatch = {
+          email: reduxAuth.email,
+          name,
+          imageUri,
+          userId,
+        };
+
+        dispatch(setUser(userToDispatch));
 
         navigation.navigate(navigationString.DRAWERNAVIGATION, {
           screen: navigationString.HOMESCREEN,
-          params: {
-            userId: userId,
-            email: reduxAuth.email,
-            name: name,
-            imageUri: imageUri,
-          },
         });
       } else {
         Alert.alert('User Not Found!');
@@ -155,7 +162,7 @@ const LoginScreen = () => {
     } finally {
       setLoading(false);
     }
-  }, [reduxAuth.email, reduxAuth.password, navigation]);
+  }, [reduxAuth.email, reduxAuth.password, navigation, dispatch]);
 
   return (
     <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>

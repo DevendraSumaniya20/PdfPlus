@@ -23,12 +23,13 @@ import CustomTheme from '../../constants/CustomTheme';
 import navigationString from '../../constants/navigationString';
 import styles from './Styles';
 import {useNavigation} from '@react-navigation/native';
-import {auth} from '../../config/Firebase';
-import firestore from '@react-native-firebase/firestore';
-import {createUserWithEmailAndPassword} from 'firebase/auth';
+import {firebase} from '@react-native-firebase/app';
+import auth from '@react-native-firebase/auth';
 import {storeData} from '../../utils/AsyncStorage';
 import {moderateScale, moderateVerticalScale} from 'react-native-size-matters';
 import ImagePicker from 'react-native-image-crop-picker';
+import {useDispatch, useSelector} from 'react-redux';
+import {setUser} from '../../redux/slices/userSlice';
 
 const SignUpScreen = () => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
@@ -44,62 +45,41 @@ const SignUpScreen = () => {
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState(null);
   const [imageError, setImageError] = useState(null);
-
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(ImagePath.LOGOBLACK);
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
   const navigation = useNavigation();
+  const dispatch = useDispatch();
+  const user = useSelector(state => state.user);
 
-  const requestCameraPermission = async () => {
+  const requestPermission = async (
+    permissionType,
+    permissionMessage,
+    action,
+  ) => {
     if (Platform.OS === 'android') {
       try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.CAMERA,
-          {
-            title: 'Camera Permission',
-            message: 'This app needs access to your camera.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          },
-        );
+        const granted = await PermissionsAndroid.request(permissionType, {
+          title: `${permissionMessage} Permission`,
+          message: `This app needs access to your ${permissionMessage.toLowerCase()}.`,
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        });
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          openImagePicker('camera');
+          action();
         } else {
-          console.log('Camera permission denied');
+          console.log(`${permissionMessage} permission denied`);
         }
       } catch (error) {
-        console.error('Error requesting camera permission: ', error);
-      }
-    } else {
-      openImagePicker('camera');
-    }
-  };
-
-  const requestGalleryPermission = async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-          {
-            title: 'Gallery Permission',
-            message: 'This app needs access to your gallery.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          },
+        console.error(
+          `Error requesting ${permissionMessage} permission: `,
+          error,
         );
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          openImagePicker('gallery');
-        } else {
-          console.log('Gallery permission denied');
-        }
-      } catch (error) {
-        console.error('Error requesting gallery permission: ', error);
       }
     } else {
-      openImagePicker('gallery');
+      action();
     }
   };
 
@@ -112,42 +92,33 @@ const SignUpScreen = () => {
           height: 400,
           cropping: true,
         });
-        handleCameraImage(selectedImage);
       } else if (type === 'gallery') {
         selectedImage = await ImagePicker.openPicker({
           width: 300,
           height: 400,
           cropping: true,
         });
-        handleGalleryImage(selectedImage);
+      }
+      if (selectedImage) {
+        setImageUri(selectedImage.path);
+        setSelectedImage({uri: selectedImage.path});
+        setModalVisible(false);
       }
     } catch (error) {
       console.error(error);
     }
   };
 
-  const handleCameraImage = selectedImage => {
-    setImageUri(selectedImage.path);
-    setSelectedImage({uri: selectedImage.path});
-    setModalVisible(false);
-  };
-
-  const handleGalleryImage = selectedImage => {
-    setImageUri(selectedImage.path);
-    setSelectedImage({uri: selectedImage.path});
-    setModalVisible(false);
-  };
-
   const handleSignUp = useCallback(async () => {
     try {
       setLoading(true);
-
       if (!validation()) {
         setLoading(false);
         return;
       }
 
-      const userSnapshot = await firestore()
+      const userSnapshot = await firebase
+        .firestore()
         .collection('Users')
         .where('email', '==', email)
         .get();
@@ -158,8 +129,7 @@ const SignUpScreen = () => {
         return;
       }
 
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
+      const userCredential = await auth().createUserWithEmailAndPassword(
         email,
         password,
       );
@@ -167,18 +137,27 @@ const SignUpScreen = () => {
       const user = userCredential.user;
       const userId = uuid.v4();
 
-      await firestore().collection('Users').doc(userId).set({
+      await firebase.firestore().collection('Users').doc(userId).set({
         userId: userId,
         email: user.email,
         name: name,
         imageUri: imageUri,
-        createdAt: firestore.FieldValue.serverTimestamp(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
 
       const idToken = await user.getIdToken();
       await storeData('idToken', idToken);
       await storeData('accessToken', idToken);
       await storeData('userId', userId);
+
+      const userData = {
+        email,
+        name,
+        imageUri,
+        userId,
+      };
+
+      dispatch(setUser(userData));
 
       navigation.navigate(navigationString.DRAWERNAVIGATION, {
         screen: navigationString.HOMESCREEN,
@@ -191,11 +170,10 @@ const SignUpScreen = () => {
       });
     } catch (error) {
       console.error('Error signing up:', error);
-      Alert.alert('Sign-up Error', error.message);
     } finally {
       setLoading(false);
     }
-  }, [email, password, name, imageUri, navigation]);
+  }, [email, password, name, imageUri, dispatch]);
 
   const validation = () => {
     console.log('Validating form fields');
@@ -270,9 +248,15 @@ const SignUpScreen = () => {
   const handleImageSelection = type => {
     setModalVisible(false);
     if (type === 'camera') {
-      requestCameraPermission();
+      requestPermission(PermissionsAndroid.PERMISSIONS.CAMERA, 'Camera', () =>
+        openImagePicker('camera'),
+      );
     } else if (type === 'gallery') {
-      requestGalleryPermission();
+      requestPermission(
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        'Gallery',
+        () => openImagePicker('gallery'),
+      );
     }
   };
 
@@ -283,8 +267,8 @@ const SignUpScreen = () => {
       contentContainerStyle={{
         paddingBottom:
           Platform.OS === 'android'
-            ? moderateVerticalScale(210)
-            : moderateVerticalScale(210),
+            ? moderateVerticalScale(250)
+            : moderateVerticalScale(250),
         backgroundColor: darkBackgroundColor,
       }}
       scrollEnabled={true}
@@ -439,9 +423,15 @@ const SignUpScreen = () => {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalCancelButton]}
+                style={[styles.modalCancelButton, {}]}
                 onPress={() => setModalVisible(false)}>
-                <Text style={styles.modalCancelButtonText}>Cancel</Text>
+                <Text
+                  style={[
+                    styles.modalCancelButtonText,
+                    {color: darkmodeColor},
+                  ]}>
+                  Cancel
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
