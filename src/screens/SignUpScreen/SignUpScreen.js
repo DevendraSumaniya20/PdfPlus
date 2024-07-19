@@ -157,6 +157,8 @@ const SignUpScreen = () => {
         userId,
       };
 
+      console.log('Dispatching user data:', userData);
+
       dispatch(setUser(userData));
 
       navigation.navigate(navigationString.DRAWERNAVIGATION, {
