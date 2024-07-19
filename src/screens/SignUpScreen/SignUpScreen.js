@@ -111,12 +111,19 @@ const SignUpScreen = () => {
 
   const handleSignUp = useCallback(async () => {
     try {
+      console.log('Sign-up process started');
       setLoading(true);
+
+      // Validation check
       if (!validation()) {
+        console.log('Validation failed');
         setLoading(false);
         return;
       }
 
+      console.log('Validation passed');
+
+      // Check if email is already in use
       const userSnapshot = await firebase
         .firestore()
         .collection('Users')
@@ -124,43 +131,66 @@ const SignUpScreen = () => {
         .get();
 
       if (!userSnapshot.empty) {
+        console.log('Email is already in use');
         setEmailError('Email is already in use');
         setLoading(false);
         return;
       }
 
+      console.log('Email is not in use');
+
+      // Create a new user with email and password
       const userCredential = await auth().createUserWithEmailAndPassword(
         email,
         password,
       );
-
       const user = userCredential.user;
-      const userId = uuid.v4();
 
-      await firebase.firestore().collection('Users').doc(userId).set({
+      console.log('User created with email and password:', user.uid);
+
+      // Generate a unique userId
+      const userId = uuid.v4();
+      console.log('Generated userId:', userId);
+
+      // Prepare userData
+      const userData = {
         userId: userId,
         email: user.email,
         name: name,
         imageUri: imageUri,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-
-      const idToken = await user.getIdToken();
-      await storeData('idToken', idToken);
-      await storeData('accessToken', idToken);
-      await storeData('userId', userId);
-
-      const userData = {
-        email,
-        name,
-        imageUri,
-        userId,
       };
 
-      console.log('Dispatching user data:', userData);
+      console.log('Prepared userData:', userData);
 
+      // Store user data in Firestore
+      const storeUserDataInFirestore = async () => {
+        await firebase
+          .firestore()
+          .collection('Users')
+          .doc(userId)
+          .set(userData);
+        console.log('User data stored in Firestore');
+      };
+
+      // Store tokens and userId in local storage
+      const storeUserDataLocally = async () => {
+        const idToken = await user.getIdToken();
+        await storeData('idToken', idToken);
+        await storeData('accessToken', idToken);
+        await storeData('userId', userId);
+        await storeData('userData', JSON.stringify(userData));
+        console.log('User data stored locally');
+      };
+
+      // Await both asynchronous operations
+      await Promise.all([storeUserDataInFirestore(), storeUserDataLocally()]);
+
+      // Log and dispatch user data
+      console.log('Dispatching user data:', userData);
       dispatch(setUser(userData));
 
+      // Navigate to the home screen
       navigation.navigate(navigationString.DRAWERNAVIGATION, {
         screen: navigationString.HOMESCREEN,
         params: {
@@ -170,12 +200,14 @@ const SignUpScreen = () => {
           imageUri: imageUri,
         },
       });
+      console.log('Navigation to home screen');
     } catch (error) {
       console.error('Error signing up:', error);
     } finally {
       setLoading(false);
+      console.log('Sign-up process ended');
     }
-  }, [email, password, name, imageUri, dispatch]);
+  }, [email, password, name, imageUri, dispatch, navigation]);
 
   const validation = () => {
     console.log('Validating form fields');
