@@ -15,9 +15,9 @@ const CustomHeader = ({
   const {darkmodeColor, darkBackgroundColor} = CustomTheme();
 
   return (
-    <View style={[styles.container]}>
+    <View style={styles.container}>
       <TouchableOpacity
-        style={[styles.button, {}]}
+        style={styles.button}
         onPress={onPress}
         activeOpacity={0.5}>
         <View style={styles.iconContainer}>
@@ -28,9 +28,11 @@ const CustomHeader = ({
             inlineStyle={inlineStyle}
           />
         </View>
-        <Text style={[styles.headerTextTitle, {color: darkmodeColor}]}>
-          {text}
-        </Text>
+        <View style={styles.textContainer}>
+          <Text style={[styles.headerTextTitle, {color: darkmodeColor}]}>
+            {text}
+          </Text>
+        </View>
       </TouchableOpacity>
     </View>
   );
@@ -42,20 +44,31 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    // padding: moderateScale(6),
+
+    position: 'relative',
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   iconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
+    paddingRight: moderateScale(6),
+    position: 'relative',
+  },
+  textContainer: {
+    flex: 1,
+    alignItems: 'center',
+    position: 'absolute',
+    left: 0,
+    right: 0,
   },
   headerTextTitle: {
     fontWeight: '800',
     textAlign: 'center',
     fontSize: scale(18),
-    flex: 1,
+    position: 'relative',
   },
 });
