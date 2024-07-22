@@ -1,73 +1,166 @@
 import React, {useState} from 'react';
-import {StyleSheet, Text, View, Switch, ScrollView} from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  Switch,
+  ScrollView,
+  SafeAreaView,
+  Alert,
+} from 'react-native';
 import CustomTheme from '../../../../constants/CustomTheme';
+import {
+  moderateScale,
+  moderateVerticalScale,
+  scale,
+} from 'react-native-size-matters';
+import CustomHeader from '../../../../components/CustomHeader';
 
-const ManageNotificationScreen = () => {
+const ManageNotificationScreen = ({navigation, route}) => {
   const [isEmailEnabled, setIsEmailEnabled] = useState(false);
   const [isPushEnabled, setIsPushEnabled] = useState(true);
-  const [isSMSenabled, setIsSMSEnabled] = useState(false);
+  const [isSMSEnabled, setIsSMSEnabled] = useState(false);
+  const [areAllEnabled, setAreAllEnabled] = useState(false);
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
+  const {screenName} = route.params || {};
 
-  const toggleEmail = () => setIsEmailEnabled(previousState => !previousState);
-  const togglePush = () => setIsPushEnabled(previousState => !previousState);
-  const toggleSMS = () => setIsSMSEnabled(previousState => !previousState);
+  const toggleEmail = () => {
+    const newValue = !isEmailEnabled;
+    setIsEmailEnabled(newValue);
+    Alert.alert(
+      'Email Notifications',
+      newValue
+        ? 'Email notifications have been enabled.'
+        : 'Email notifications have been disabled.',
+    );
+  };
+
+  const togglePush = () => {
+    const newValue = !isPushEnabled;
+    setIsPushEnabled(newValue);
+    Alert.alert(
+      'Push Notifications',
+      newValue
+        ? 'Push notifications have been enabled.'
+        : 'Push notifications have been disabled.',
+    );
+  };
+
+  const toggleSMS = () => {
+    const newValue = !isSMSEnabled;
+    setIsSMSEnabled(newValue);
+    Alert.alert(
+      'SMS Notifications',
+      newValue
+        ? 'SMS notifications have been enabled.'
+        : 'SMS notifications have been disabled.',
+    );
+  };
+
+  const toggleAllNotifications = () => {
+    const newValue = !areAllEnabled;
+    setIsEmailEnabled(newValue);
+    setIsPushEnabled(newValue);
+    setIsSMSEnabled(newValue);
+    setAreAllEnabled(newValue);
+
+    Alert.alert(
+      'Notifications',
+      newValue
+        ? 'All notifications have been enabled.'
+        : 'All notifications have been disabled.',
+    );
+  };
 
   return (
-    <ScrollView
-      contentContainerStyle={[
-        styles.container,
-        {backgroundColor: darkBackgroundColor},
-      ]}>
-      <Text style={[styles.title, {color: darkmodeColor}]}>
-        Manage Notifications
-      </Text>
-      <View
-        style={[
-          styles.settingContainer,
-          {backgroundColor: darkBackgroundColor, borderColor: darkBorderColor},
-        ]}>
-        <Text style={[styles.settingText, {color: darkmodeColor}]}>
-          Email Notifications
-        </Text>
-        <Switch
-          trackColor={{false: '#767577', true: '#81b0ff'}}
-          thumbColor={isEmailEnabled ? '#f5dd4b' : '#f4f3f4'}
-          onValueChange={toggleEmail}
-          value={isEmailEnabled}
+    <SafeAreaView
+      style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
+      <View style={styles.marginContainer}>
+        <CustomHeader
+          text={screenName}
+          iconName={'chevron-back'}
+          color={darkmodeColor}
+          onPress={() => {
+            navigation.goBack();
+          }}
         />
+        <View style={styles.mainNotificationView}>
+          <View
+            style={[
+              styles.settingContainer,
+              {
+                backgroundColor: darkBackgroundColor,
+                borderColor: darkBorderColor,
+              },
+            ]}>
+            <Text style={[styles.settingText, {color: darkmodeColor}]}>
+              Enable All Notifications
+            </Text>
+            <Switch
+              trackColor={{false: '#767577', true: '#81b0ff'}}
+              thumbColor={areAllEnabled ? '#555' : '#f4f3f4'}
+              onValueChange={toggleAllNotifications}
+              value={areAllEnabled}
+            />
+          </View>
+          <View
+            style={[
+              styles.settingContainer,
+              {
+                backgroundColor: darkBackgroundColor,
+                borderColor: darkBorderColor,
+              },
+            ]}>
+            <Text style={[styles.settingText, {color: darkmodeColor}]}>
+              Email Notifications
+            </Text>
+            <Switch
+              trackColor={{false: '#767577', true: '#81b0ff'}}
+              thumbColor={isEmailEnabled ? '#555' : '#f4f3f4'}
+              onValueChange={toggleEmail}
+              value={isEmailEnabled}
+            />
+          </View>
+          <View
+            style={[
+              styles.settingContainer,
+              {
+                backgroundColor: darkBackgroundColor,
+                borderColor: darkBorderColor,
+              },
+            ]}>
+            <Text style={[styles.settingText, {color: darkmodeColor}]}>
+              Push Notifications
+            </Text>
+            <Switch
+              trackColor={{false: '#767577', true: '#81b0ff'}}
+              thumbColor={isPushEnabled ? '#555' : '#f4f3f4'}
+              onValueChange={togglePush}
+              value={isPushEnabled}
+            />
+          </View>
+          <View
+            style={[
+              styles.settingContainer,
+              {
+                backgroundColor: darkBackgroundColor,
+                borderColor: darkBorderColor,
+              },
+            ]}>
+            <Text style={[styles.settingText, {color: darkmodeColor}]}>
+              SMS Notifications
+            </Text>
+            <Switch
+              trackColor={{false: '#767577', true: '#81b0ff'}}
+              thumbColor={isSMSEnabled ? '#555' : '#f4f3f4'}
+              onValueChange={toggleSMS}
+              value={isSMSEnabled}
+            />
+          </View>
+        </View>
       </View>
-      <View
-        style={[
-          styles.settingContainer,
-          {backgroundColor: darkBackgroundColor, borderColor: darkBorderColor},
-        ]}>
-        <Text style={[styles.settingText, {color: darkmodeColor}]}>
-          Push Notifications
-        </Text>
-        <Switch
-          trackColor={{false: '#767577', true: '#81b0ff'}}
-          thumbColor={isPushEnabled ? '#f5dd4b' : '#f4f3f4'}
-          onValueChange={togglePush}
-          value={isPushEnabled}
-        />
-      </View>
-      <View
-        style={[
-          styles.settingContainer,
-          {backgroundColor: darkBackgroundColor, borderColor: darkBorderColor},
-        ]}>
-        <Text style={[styles.settingText, {color: darkmodeColor}]}>
-          SMS Notifications
-        </Text>
-        <Switch
-          trackColor={{false: '#767577', true: '#81b0ff'}}
-          thumbColor={isSMSenabled ? '#f5dd4b' : '#f4f3f4'}
-          onValueChange={toggleSMS}
-          value={isSMSenabled}
-        />
-      </View>
-    </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -75,26 +168,25 @@ export default ManageNotificationScreen;
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
-    padding: 20,
+    flex: 1,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
+  marginContainer: {
+    margin: moderateScale(16),
+  },
+  mainNotificationView: {
+    marginVertical: moderateVerticalScale(32),
   },
   settingContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 10,
     borderWidth: 1,
+    marginTop: moderateVerticalScale(16),
+    padding: moderateScale(16),
+    borderRadius: moderateScale(8),
   },
   settingText: {
-    fontSize: 18,
+    fontSize: scale(14),
+    fontWeight: '700',
   },
 });

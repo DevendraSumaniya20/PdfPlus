@@ -160,14 +160,19 @@ const HomeScreen = ({route}) => {
     <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
       <SafeAreaView style={styles.marginContainer}>
         <View style={styles.userProfileContainer}>
-          <Image
-            source={{
-              uri:
-                userProfilePic ||
-                'https://s.yimg.com/ny/api/res/1.2/zpFvsAowCv0gf6.Nx0FHAw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTY0MDtoPTM2MA--/https://s.yimg.com/os/creatr-uploaded-images/2023-09/19fa78d0-5c92-11ee-bdf7-4c07cf46d8b9',
-            }}
-            style={styles.profileImage}
-          />
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate(navigationString.PROFILESCREEN);
+            }}>
+            <Image
+              source={{
+                uri:
+                  userProfilePic ||
+                  'https://s.yimg.com/ny/api/res/1.2/zpFvsAowCv0gf6.Nx0FHAw--/YXBwaWQ9aGlnaGxhbmRlcjt3PTY0MDtoPTM2MA--/https://s.yimg.com/os/creatr-uploaded-images/2023-09/19fa78d0-5c92-11ee-bdf7-4c07cf46d8b9',
+              }}
+              style={styles.profileImage}
+            />
+          </TouchableOpacity>
           <View style={styles.userInfo}>
             <Text style={[styles.userName, {color: darkmodeColor}]}>
               {username}

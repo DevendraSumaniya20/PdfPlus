@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: moderateScale(6),
+    // padding: moderateScale(6),
   },
   button: {
     flexDirection: 'row',

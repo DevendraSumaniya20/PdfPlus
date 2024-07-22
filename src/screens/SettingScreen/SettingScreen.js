@@ -21,6 +21,7 @@ import {
   setPassword,
 } from '../../redux/slices/authSlice';
 import CustomTheme from '../../constants/CustomTheme';
+import styles from './Styles';
 
 const SettingScreen = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -73,25 +74,39 @@ const SettingScreen = ({navigation}) => {
           <MenuItem
             iconName="person"
             text="Profile"
-            onPress={() => navigation.push(navigationString.PROFILESCREEN)}
+            onPress={() =>
+              navigation.push(navigationString.PROFILESCREEN, {
+                screenName: 'Profile',
+              })
+            }
           />
           <MenuItem
             iconName="notifications"
             text="Manage Notifications"
             onPress={() =>
-              navigation.push(navigationString.MANAGENOTIFICATIONSCREEN)
+              navigation.push(navigationString.MANAGENOTIFICATIONSCREEN, {
+                screenName: 'Manage Notifications',
+              })
             }
           />
 
           <MenuItem
             iconName="info"
             text="About Us"
-            onPress={() => navigation.push(navigationString.ABOUTSCREEN)}
+            onPress={() =>
+              navigation.push(navigationString.ABOUTSCREEN, {
+                screenName: 'About Us',
+              })
+            }
           />
           <MenuItem
             iconName="feedback"
             text="Feedback"
-            onPress={() => navigation.push(navigationString.FEEDBACKSCREEN)}
+            onPress={() =>
+              navigation.push(navigationString.FEEDBACKSCREEN, {
+                screenName: 'Feedback',
+              })
+            }
           />
 
           <MenuItem iconName="logout" text="Sign Out" onPress={signOut} />
@@ -102,29 +117,3 @@ const SettingScreen = ({navigation}) => {
 };
 
 export default SettingScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  marginContainer: {
-    margin: moderateScale(16),
-  },
-  menuContainer: {
-    marginHorizontal: moderateScale(4),
-  },
-  menuText: {
-    fontSize: moderateScale(16),
-    fontWeight: '600',
-    marginLeft: moderateScale(12),
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: moderateVerticalScale(20),
-    padding: moderateScale(10),
-    borderRadius: moderateScale(8),
-    borderBottomColor: 'rgb(184, 174, 174)',
-    borderBottomWidth: 0.5,
-  },
-});

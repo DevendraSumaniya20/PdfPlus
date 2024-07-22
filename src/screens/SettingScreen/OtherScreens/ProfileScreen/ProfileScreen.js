@@ -18,14 +18,11 @@ import ImagePicker from 'react-native-image-crop-picker';
 import CustomTheme from '../../../../constants/CustomTheme';
 import CustomInput from '../../../../components/CustomTextInput';
 import CustomButton from '../../../../components/CustomButton';
-import {
-  moderateScale,
-  moderateVerticalScale,
-  scale,
-} from 'react-native-size-matters';
+import {moderateVerticalScale} from 'react-native-size-matters';
 import CustomHeader from '../../../../components/CustomHeader';
+import styles from './Styles';
 
-const ProfileScreen = ({navigation}) => {
+const ProfileScreen = ({navigation, route}) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
@@ -34,6 +31,7 @@ const ProfileScreen = ({navigation}) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
+  const {screenName} = route.params || {};
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -138,6 +136,7 @@ const ProfileScreen = ({navigation}) => {
       style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
       <View style={styles.marginContainer}>
         <CustomHeader
+          text={screenName}
           iconName={'chevron-back'}
           color={darkmodeColor}
           onPress={() => {
@@ -149,7 +148,7 @@ const ProfileScreen = ({navigation}) => {
             <TouchableOpacity onPress={() => setModalVisible(true)}>
               <Image
                 source={{uri: imageUri}}
-                style={[styles.profileImage, {borderColor: darkBorderColor}]}
+                style={[styles.profileImage, {borderColor: '#259'}]}
               />
             </TouchableOpacity>
           ) : (
@@ -159,7 +158,9 @@ const ProfileScreen = ({navigation}) => {
           )}
         </View>
 
-        <Text style={[styles.info, {color: darkmodeColor}]}>Name:</Text>
+        <View style={styles.labelView}>
+          <Text style={[styles.info, {color: darkmodeColor}]}>Name :</Text>
+        </View>
         <CustomInput
           placeholderTextColor={darkmodeColor}
           onChangeText={setName}
@@ -167,7 +168,10 @@ const ProfileScreen = ({navigation}) => {
           value={name}
         />
 
-        <Text style={[styles.info, {color: darkmodeColor}]}>Email:</Text>
+        <View style={styles.labelView}>
+          <Text style={[styles.info, {color: darkmodeColor}]}>Email :</Text>
+        </View>
+
         <CustomInput
           placeholderTextColor={darkmodeColor}
           onChangeText={setEmail}
@@ -247,75 +251,5 @@ const ProfileScreen = ({navigation}) => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  marginContainer: {
-    margin: moderateScale(16),
-  },
-  title: {
-    fontSize: scale(24),
-    fontWeight: '700',
-    marginBottom: moderateScale(24),
-  },
-  imageContainer: {
-    alignItems: 'center',
-    marginBottom: moderateVerticalScale(26),
-  },
-  info: {
-    fontSize: scale(18),
-    marginBottom: moderateVerticalScale(8),
-  },
-
-  profileImage: {
-    width: moderateScale(120),
-    height: moderateVerticalScale(120),
-    borderRadius: moderateScale(100),
-    borderWidth: 0.5,
-  },
-
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    width: '80%',
-    padding: moderateScale(20),
-    borderRadius: moderateScale(16),
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  modalTitle: {
-    fontSize: scale(20),
-    fontWeight: '600',
-    marginBottom: moderateVerticalScale(20),
-  },
-  modalButton: {
-    borderRadius: moderateScale(8),
-    paddingVertical: moderateVerticalScale(12),
-    paddingHorizontal: moderateScale(20),
-    marginBottom: moderateScale(8),
-    width: '100%',
-    alignItems: 'center',
-    borderWidth: 1,
-  },
-  modalButtonText: {
-    fontSize: scale(16),
-    fontWeight: '600',
-  },
-  modalCloseButton: {
-    borderRadius: moderateScale(8),
-    paddingVertical: moderateScale(8),
-    paddingHorizontal: moderateVerticalScale(20),
-    marginTop: moderateVerticalScale(8),
-  },
-  modalCloseButtonText: {
-    fontSize: scale(16),
-    fontWeight: '400',
-  },
-});
 
 export default ProfileScreen;
