@@ -14,6 +14,11 @@ const CustomInput = ({
   autoFocus,
   placeholderTextColor,
   value,
+  multiline,
+  keyboardType,
+  numberOfLines,
+  textAlignVertical,
+  editable,
 }) => {
   const [borderColor, setBorderColor] = useState('#AAA');
   const {darkmodeColor} = CustomTheme();
@@ -41,6 +46,11 @@ const CustomInput = ({
         onFocus={handleFocus}
         onBlur={handleBlur}
         value={value}
+        multiline={multiline}
+        keyboardType={keyboardType}
+        numberOfLines={numberOfLines}
+        textAlignVertical={textAlignVertical}
+        editable={editable}
       />
       {!!rightIcon && (
         <View style={styles.rightIconContainer}>
