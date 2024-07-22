@@ -13,6 +13,7 @@ const CustomInput = ({
   rightIcon,
   autoFocus,
   placeholderTextColor,
+  value,
 }) => {
   const [borderColor, setBorderColor] = useState('#AAA');
   const {darkmodeColor} = CustomTheme();
@@ -39,6 +40,7 @@ const CustomInput = ({
         placeholderTextColor={placeholderTextColor}
         onFocus={handleFocus}
         onBlur={handleBlur}
+        value={value}
       />
       {!!rightIcon && (
         <View style={styles.rightIconContainer}>

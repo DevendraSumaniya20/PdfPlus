@@ -5,24 +5,35 @@ import {
   View,
   Image,
   ActivityIndicator,
-  TextInput,
   TouchableOpacity,
   Alert,
   Modal,
   Pressable,
   ToastAndroid,
+  SafeAreaView,
 } from 'react-native';
 import {firebase} from '@react-native-firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import ImagePicker from 'react-native-image-crop-picker';
+import CustomTheme from '../../../../constants/CustomTheme';
+import CustomInput from '../../../../components/CustomTextInput';
+import CustomButton from '../../../../components/CustomButton';
+import {
+  moderateScale,
+  moderateVerticalScale,
+  scale,
+} from 'react-native-size-matters';
+import CustomHeader from '../../../../components/CustomHeader';
 
-const ProfileScreen = () => {
+const ProfileScreen = ({navigation}) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [imageUri, setImageUri] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+
+  const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -106,176 +117,204 @@ const ProfileScreen = () => {
 
   if (loading) {
     return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#007BFF" />
+      <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
+        <ActivityIndicator size="large" color={darkmodeColor} />
       </View>
     );
   }
 
   if (!user) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>No user data available</Text>
+      <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
+        <Text style={[styles.title, {color: darkmodeColor}]}>
+          No user data available
+        </Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.imageContainer}>
-        {imageUri ? (
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
-            <Image source={{uri: imageUri}} style={styles.profileImage} />
-          </TouchableOpacity>
-        ) : (
-          <Text style={styles.info}>No Image Available</Text>
-        )}
-      </View>
-
-      <Text style={styles.info}>Name:</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="Enter your name"
-      />
-      <Text style={styles.info}>Email:</Text>
-      <TextInput
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        placeholder="Enter your email"
-      />
-      <TouchableOpacity style={styles.button} onPress={handleUpdate}>
-        <Text style={styles.buttonText}>Update Profile</Text>
-      </TouchableOpacity>
-
-      <Modal
-        transparent={true}
-        animationType="slide"
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Image Source</Text>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => openImagePicker('camera')}>
-              <Text style={styles.modalButtonText}>Open Camera</Text>
+    <SafeAreaView
+      style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
+      <View style={styles.marginContainer}>
+        <CustomHeader
+          iconName={'chevron-back'}
+          color={darkmodeColor}
+          onPress={() => {
+            navigation.goBack();
+          }}
+        />
+        <View style={styles.imageContainer}>
+          {imageUri ? (
+            <TouchableOpacity onPress={() => setModalVisible(true)}>
+              <Image
+                source={{uri: imageUri}}
+                style={[styles.profileImage, {borderColor: darkBorderColor}]}
+              />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => openImagePicker('gallery')}>
-              <Text style={styles.modalButtonText}>Open Gallery</Text>
-            </TouchableOpacity>
-            <Pressable
-              style={styles.modalCloseButton}
-              onPress={() => setModalVisible(false)}>
-              <Text style={styles.modalCloseButtonText}>Close</Text>
-            </Pressable>
-          </View>
+          ) : (
+            <Text style={[styles.info, {color: darkmodeColor}]}>
+              No Image Available
+            </Text>
+          )}
         </View>
-      </Modal>
-    </View>
+
+        <Text style={[styles.info, {color: darkmodeColor}]}>Name:</Text>
+        <CustomInput
+          placeholderTextColor={darkmodeColor}
+          onChangeText={setName}
+          placeholder="Edit your Name"
+          value={name}
+        />
+
+        <Text style={[styles.info, {color: darkmodeColor}]}>Email:</Text>
+        <CustomInput
+          placeholderTextColor={darkmodeColor}
+          onChangeText={setEmail}
+          placeholder="Edit your Email"
+          value={email}
+        />
+
+        <View style={{marginVertical: moderateVerticalScale(16)}}>
+          <CustomButton onPress={handleUpdate} text={'Update Profile'} />
+        </View>
+
+        <Modal
+          transparent={true}
+          animationType="slide"
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}>
+          <View
+            style={[
+              styles.modalContainer,
+              {
+                // backgroundColor: '#2c2a2a',
+                borderColor: darkBorderColor,
+              },
+            ]}>
+            <View
+              style={[
+                styles.modalContent,
+                {backgroundColor: darkBackgroundColor},
+              ]}>
+              <Text style={[styles.modalTitle, {color: darkmodeColor}]}>
+                Select Image Source
+              </Text>
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  {
+                    backgroundColor: darkBackgroundColor,
+                    borderColor: darkBorderColor,
+                  },
+                ]}
+                onPress={() => openImagePicker('camera')}>
+                <Text style={[styles.modalButtonText, {color: darkmodeColor}]}>
+                  Open Camera
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.modalButton,
+                  {
+                    backgroundColor: darkBackgroundColor,
+                    borderColor: darkBorderColor,
+                  },
+                ]}
+                onPress={() => openImagePicker('gallery')}>
+                <Text style={[styles.modalButtonText, {color: darkmodeColor}]}>
+                  Open Gallery
+                </Text>
+              </TouchableOpacity>
+              <Pressable
+                style={[
+                  styles.modalCloseButton,
+                  {
+                    backgroundColor: darkBackgroundColor,
+                    borderColor: darkBorderColor,
+                  },
+                ]}
+                onPress={() => setModalVisible(false)}>
+                <Text
+                  style={[styles.modalCloseButtonText, {color: darkmodeColor}]}>
+                  Close
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 16,
-    backgroundColor: '#f5f5f5',
+  },
+  marginContainer: {
+    margin: moderateScale(16),
   },
   title: {
-    fontSize: 28,
+    fontSize: scale(24),
     fontWeight: '700',
-    marginBottom: 24,
-    color: '#333',
+    marginBottom: moderateScale(24),
   },
   imageContainer: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: moderateVerticalScale(26),
   },
   info: {
-    fontSize: 18,
-    marginBottom: 8,
-    color: '#555',
+    fontSize: scale(18),
+    marginBottom: moderateVerticalScale(8),
   },
-  input: {
-    height: 45,
-    borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 12,
-    width: '100%',
-    paddingHorizontal: 12,
-    marginBottom: 16,
-    backgroundColor: '#fff',
-  },
+
   profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 2,
-    borderColor: '#ddd',
+    width: moderateScale(120),
+    height: moderateVerticalScale(120),
+    borderRadius: moderateScale(100),
+    borderWidth: 0.5,
   },
-  button: {
-    backgroundColor: '#007BFF',
-    borderRadius: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 30,
-    marginTop: 24,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-  },
+
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   modalContent: {
     width: '80%',
-    padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    padding: moderateScale(20),
+    borderRadius: moderateScale(16),
     alignItems: 'center',
+    borderWidth: 1,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: scale(20),
     fontWeight: '600',
-    marginBottom: 20,
+    marginBottom: moderateVerticalScale(20),
   },
   modalButton: {
-    backgroundColor: '#007BFF',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginBottom: 10,
+    borderRadius: moderateScale(8),
+    paddingVertical: moderateVerticalScale(12),
+    paddingHorizontal: moderateScale(20),
+    marginBottom: moderateScale(8),
     width: '100%',
     alignItems: 'center',
+    borderWidth: 1,
   },
   modalButtonText: {
-    color: '#fff',
-    fontSize: 16,
+    fontSize: scale(16),
     fontWeight: '600',
   },
   modalCloseButton: {
-    backgroundColor: '#ccc',
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginTop: 10,
+    borderRadius: moderateScale(8),
+    paddingVertical: moderateScale(8),
+    paddingHorizontal: moderateVerticalScale(20),
+    marginTop: moderateVerticalScale(8),
   },
   modalCloseButtonText: {
-    color: '#333',
-    fontSize: 16,
-    fontWeight: '600',
+    fontSize: scale(16),
+    fontWeight: '400',
   },
 });
 
