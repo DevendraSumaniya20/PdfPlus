@@ -1,20 +1,17 @@
 import {
-  StyleSheet,
   Text,
   View,
   Image,
   SafeAreaView,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import React from 'react';
 import ImagePath from '../../../../constants/ImagePath';
 import CustomTheme from '../../../../constants/CustomTheme';
-import {
-  moderateScale,
-  moderateVerticalScale,
-  scale,
-} from 'react-native-size-matters';
 import CustomHeader from '../../../../components/CustomHeader';
+import styles from './Styles';
+import {Linking} from 'react-native';
 
 const AboutScreen = ({navigation, route}) => {
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
@@ -24,7 +21,9 @@ const AboutScreen = ({navigation, route}) => {
   return (
     <SafeAreaView
       style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContainer}
+        showsVerticalScrollIndicator={false}>
         <View style={styles.marginContainer}>
           <CustomHeader
             text={screenName}
@@ -77,8 +76,17 @@ const AboutScreen = ({navigation, route}) => {
 
           <View style={styles.footer}>
             <Text style={[styles.footerText, {color: darkmodeColor}]}>
-              Creator: Devendra Sumaniya | Email: pdfplus@gmail.com
+              Creator: Devendra Sumaniya
             </Text>
+            <TouchableOpacity
+              onPress={() => {
+                Linking.openURL('mailto:pdfplus@gmail.com');
+              }}>
+              <Text style={[styles.footerText, {color: darkmodeColor}]}>
+                Email: pdfplus@gmail.com
+              </Text>
+            </TouchableOpacity>
+
             <Text style={[styles.footerText, {color: darkmodeColor}]}>
               Version: 1.0.0
             </Text>
@@ -93,46 +101,3 @@ const AboutScreen = ({navigation, route}) => {
 };
 
 export default AboutScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-  },
-  marginContainer: {
-    margin: moderateScale(16),
-  },
-  header: {
-    alignItems: 'center',
-    marginVertical: moderateVerticalScale(32),
-  },
-  logo: {
-    width: moderateScale(120),
-    height: moderateVerticalScale(100),
-    marginBottom: moderateVerticalScale(16),
-  },
-  content: {
-    borderRadius: moderateScale(10),
-    padding: moderateScale(16),
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  paragraph: {
-    fontSize: scale(14),
-    marginBottom: moderateVerticalScale(16),
-    lineHeight: 22,
-  },
-  footer: {
-    marginTop: moderateVerticalScale(32),
-    alignItems: 'center',
-  },
-  footerText: {
-    fontSize: scale(12),
-    marginBottom: moderateVerticalScale(4),
-    textAlign: 'center',
-  },
-});
