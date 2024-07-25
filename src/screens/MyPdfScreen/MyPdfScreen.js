@@ -1,316 +1,203 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef} from 'react';
 import {
   StyleSheet,
   Text,
   View,
   Button,
   Alert,
+  ActivityIndicator,
   Platform,
   Modal,
-  TextInput,
   TouchableOpacity,
-  ActivityIndicator,
+  TextInput,
+  Animated, // Import Animated
 } from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 import Pdf from 'react-native-pdf';
-import {request, PERMISSIONS, RESULTS} from 'react-native-permissions';
 import RNFS from 'react-native-fs';
-
-import {moderateScale, scale} from 'react-native-size-matters';
-import CustomTheme from '../../constants/CustomTheme';
-import CustomIcon from '../../components/CustomIcon';
+import {PERMISSIONS, request, RESULTS} from 'react-native-permissions';
+import Icon from 'react-native-vector-icons/Ionicons';
+import Share from 'react-native-share';
 
 const MyPdfScreen = () => {
   const [pdfUri, setPdfUri] = useState(null);
-  const [permissionGranted, setPermissionGranted] = useState(false);
-  const [totalPages, setTotalPages] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [searchText, setSearchText] = useState('');
-  const [modalVisible, setModalVisible] = useState(false);
-  const [pageToGo, setPageToGo] = useState('');
-  const [searchModalVisible, setSearchModalVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [numberOfPages, setNumberOfPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [searchedPage, setSearchedPage] = useState(null);
+  const [pdfName, setPdfName] = useState('');
 
-  const pdfRef = useRef(null);
-  const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
+  const scaleAnim = useRef(new Animated.Value(1)).current; // Initialize animated value
 
-  useEffect(() => {
-    requestPermissions();
-  }, []);
-
-  const requestPermissions = async () => {
-    try {
-      const permissions = Platform.select({
-        ios: [PERMISSIONS.IOS.PHOTO_LIBRARY],
-        android: [
-          PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
-          PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
-        ],
-      });
-
-      const results = await Promise.all(
-        permissions.map(permission => request(permission)),
-      );
-      const allGranted = results.every(result => result === RESULTS.GRANTED);
-
-      if (allGranted) {
-        setPermissionGranted(true);
-      } else {
-        Alert.alert(
-          'Permission required',
-          'Storage permissions are needed to select and display PDF files.',
-        );
+  // Request storage permission
+  const requestStoragePermission = async () => {
+    if (Platform.OS === 'android') {
+      const result = await request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+      console.log('Android Permission Result:', result);
+      if (result !== RESULTS.GRANTED) {
+        Alert.alert('Permission Denied', 'Cannot access storage on Android.');
       }
-    } catch (err) {
-      console.warn('Permission request error:', err);
+      return result === RESULTS.GRANTED;
+    } else if (Platform.OS === 'ios') {
+      const result = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
+      console.log('iOS Permission Result:', result);
+      if (result !== RESULTS.GRANTED) {
+        Alert.alert('Permission Denied', 'Cannot access media library on iOS.');
+      }
+      return result === RESULTS.GRANTED;
     }
+    return true;
   };
 
-  const pickPdf = async () => {
-    if (!permissionGranted) {
-      Alert.alert(
-        'Permission required',
-        'Please grant storage permissions to pick a PDF file.',
-      );
+  // Handle PDF selection with animation
+  const handleChoosePdf = async () => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 1.2,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(); // Trigger the animation
+
+    const hasPermission = await requestStoragePermission();
+    if (!hasPermission) {
       return;
     }
 
     try {
+      setLoading(true);
       const res = await DocumentPicker.pick({
         type: [DocumentPicker.types.pdf],
       });
 
       const fileUri = res[0].uri;
+      const destPath = `${RNFS.DocumentDirectoryPath}/${res[0].name}`;
+      await RNFS.copyFile(fileUri, destPath);
 
-      if (Platform.OS === 'android' && fileUri.startsWith('content://')) {
-        const filePath = `${RNFS.CachesDirectoryPath}/${res[0].name}`;
-        await RNFS.copyFile(fileUri, filePath);
-        setPdfUri(filePath);
-      } else {
-        const filePath = fileUri.replace('file://', '');
-        setPdfUri(filePath);
-      }
+      setPdfUri(`file://${destPath}`);
+      setPdfName(res[0].name);
+      setLoading(false);
     } catch (err) {
+      setLoading(false);
       if (DocumentPicker.isCancel(err)) {
-        console.log('User cancelled the picker');
+        Alert.alert('Cancelled', 'No file selected');
       } else {
-        Alert.alert('Error', 'Failed to pick the PDF file.');
+        Alert.alert('Error', 'Failed to pick a PDF file');
+        console.error(err);
       }
     }
   };
 
-  const handlePageChange = page => {
-    setCurrentPage(page);
-  };
-
-  const handleLoadComplete = numberOfPages => {
-    setTotalPages(numberOfPages);
-    setIsLoading(false);
-  };
-
-  const goToPage = () => {
-    const pageNumber = parseInt(pageToGo, 10);
-    if (!isNaN(pageNumber) && pageNumber > 0 && pageNumber <= totalPages) {
-      pdfRef.current.setPage(pageNumber);
-      setCurrentPage(pageNumber);
-      setModalVisible(false);
-    } else {
-      Alert.alert(
-        'Invalid Page Number',
-        `Please enter a valid page number between 1 and ${totalPages}.`,
-      );
-    }
-  };
-
-  const handleSearch = () => {
-    // Implement search functionality here
-    Alert.alert('Search', `Searching for: ${searchText}`);
-  };
-
-  const confirmDownload = async () => {
-    const fileName = pdfUri.substring(pdfUri.lastIndexOf('/') + 1);
-    const destPath = `${RNFS.DocumentDirectoryPath}/${fileName}`;
-
-    try {
-      const exists = await RNFS.exists(destPath);
-      if (exists) {
-        Alert.alert(
-          'File already downloaded',
-          'The file is already downloaded.',
-        );
-        return;
-      }
-
-      const downloadOptions = {
-        fromUrl: pdfUri,
-        toFile: destPath,
+  // Handle PDF share
+  const handleSharePdf = async () => {
+    if (pdfUri) {
+      const options = {
+        url: pdfUri,
+        type: 'application/pdf',
       };
 
-      const downloadResult = await RNFS.downloadFile(downloadOptions).promise;
-      if (downloadResult.statusCode === 200) {
-        Alert.alert(
-          'Download complete',
-          'Pdf downloaded successfully! Click to view',
-        );
-      } else {
-        Alert.alert('Download failed', 'Failed to download the PDF.');
+      try {
+        await Share.open(options);
+      } catch (error) {
+        console.log('Error while sharing PDF:', error);
+        Alert.alert('Error', 'Failed to share PDF.');
       }
-    } catch (error) {
-      Alert.alert('Download error', 'Failed to download the PDF.');
+    }
+  };
+
+  // Handle search text and navigate to page
+  const handleSearch = () => {
+    const page = parseInt(searchText, 10);
+    if (page > 0 && page <= numberOfPages) {
+      setSearchedPage(page);
+      setModalVisible(false);
+    } else {
+      Alert.alert('Error', 'Page number out of range.');
     }
   };
 
   return (
-    <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
-      <View style={styles.toolbar}>
-        <TouchableOpacity onPress={() => setModalVisible(!modalVisible)}>
-          <CustomIcon
-            type="MaterialCommunityIcons"
-            color={darkmodeColor}
-            name={'dots-vertical'}
-            size={scale(24)}
-          />
-        </TouchableOpacity>
-      </View>
-      <Button title="Pick PDF" onPress={pickPdf} />
-      {pdfUri ? (
-        <View style={styles.pdfContainer}>
+    <View style={styles.container}>
+      {!pdfUri && (
+        <Animated.View style={{transform: [{scale: scaleAnim}]}}>
+          <Button title="Choose PDF" onPress={handleChoosePdf} />
+        </Animated.View>
+      )}
+      {loading && <ActivityIndicator size="large" color="#0000ff" />}
+      {pdfUri && !loading && (
+        <>
+          <View style={styles.header}>
+            <Text style={styles.pdfName}>{pdfName}</Text>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={() => setModalVisible(true)}>
+              <Icon name="ellipsis-vertical" size={30} color="black" />
+            </TouchableOpacity>
+          </View>
           <Pdf
             trustAllCerts={false}
-            ref={pdfRef}
-            source={{uri: pdfUri, cache: true}}
-            onPageChanged={handlePageChange}
-            onLoadComplete={handleLoadComplete}
+            source={{uri: pdfUri}}
+            onLoadComplete={numberOfPages => {
+              setNumberOfPages(numberOfPages);
+              setIsLoading(false);
+              console.log(`Number of pages: ${numberOfPages}`);
+            }}
+            onPageChanged={page => {
+              setCurrentPage(page);
+              console.log(`Current page: ${page}`);
+            }}
             onError={error => {
-              console.error('PDF error:', error);
+              console.log('Error while loading PDF:', error);
               Alert.alert('Error', 'Failed to load PDF.');
               setIsLoading(false);
             }}
+            onPressLink={uri => {
+              console.log(`Link pressed: ${uri}`);
+            }}
+            page={searchedPage || 1}
+            scale={1.0}
             style={styles.pdf}
           />
-          {isLoading && (
-            <View style={styles.loading}>
-              <ActivityIndicator size="large" color={darkmodeColor} />
-            </View>
-          )}
-          <Text style={[styles.pageInfo, {color: darkmodeColor}]}>
-            Page {currentPage} of {totalPages}
-          </Text>
-          <TouchableOpacity
-            onPress={() => setSearchModalVisible(true)}
-            style={styles.actionButton}>
-            <Text style={[styles.buttonText, {color: darkmodeColor}]}>
-              Search
+          <View style={styles.footer}>
+            <Text>
+              Page {currentPage} of {numberOfPages}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setModalVisible(true)}
-            style={styles.actionButton}>
-            <Text style={[styles.buttonText, {color: darkmodeColor}]}>
-              Go to Page
-            </Text>
-          </TouchableOpacity>
-          <Modal
-            visible={modalVisible}
-            transparent={true}
-            animationType="slide"
-            onRequestClose={() => setModalVisible(false)}>
-            <View style={[styles.modalContainer, {borderColor: darkmodeColor}]}>
-              <View style={[styles.modalView, {borderColor: darkBorderColor}]}>
-                <TextInput
-                  style={[
-                    styles.input,
-                    {borderColor: darkBorderColor, color: darkmodeColor},
-                  ]}
-                  placeholder="Enter page number"
-                  keyboardType="numeric"
-                  value={pageToGo}
-                  onChangeText={setPageToGo}
-                />
-                <TouchableOpacity
-                  onPress={goToPage}
-                  style={[
-                    styles.openButton,
-                    {backgroundColor: darkBackgroundColor},
-                  ]}>
-                  <Text style={[styles.buttonText, {color: darkmodeColor}]}>
-                    Go
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setModalVisible(false)}
-                  style={[
-                    styles.openButton,
-                    {backgroundColor: darkBackgroundColor},
-                  ]}>
-                  <Text style={[styles.buttonText, {color: darkmodeColor}]}>
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={confirmDownload}
-                  style={[
-                    styles.openButton,
-                    {backgroundColor: darkBackgroundColor},
-                  ]}>
-                  <Text style={[styles.buttonText, {color: darkmodeColor}]}>
-                    Download PDF
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-          <Modal
-            visible={searchModalVisible}
-            transparent={true}
-            animationType="slide"
-            onRequestClose={() => setSearchModalVisible(false)}>
-            <View
-              style={[
-                styles.modalContainer,
-                {backgroundColor: 'rgba(0, 0, 0, 0.5)'},
-              ]}>
-              <View
-                style={[
-                  styles.modalView,
-                  {backgroundColor: darkBackgroundColor},
-                ]}>
-                <TextInput
-                  style={[
-                    styles.input,
-                    {borderColor: darkBorderColor, color: darkmodeColor},
-                  ]}
-                  placeholder="Enter text to search"
-                  value={searchText}
-                  onChangeText={setSearchText}
-                />
-                <TouchableOpacity
-                  onPress={handleSearch}
-                  style={[
-                    styles.openButton,
-                    {backgroundColor: darkBackgroundColor},
-                  ]}>
-                  <Text style={[styles.buttonText, {color: darkmodeColor}]}>
-                    Search
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setSearchModalVisible(false)}
-                  style={[
-                    styles.openButton,
-                    {backgroundColor: darkBackgroundColor},
-                  ]}>
-                  <Text style={[styles.buttonText, {color: darkmodeColor}]}>
-                    Cancel
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-        </View>
-      ) : (
-        <Text style={{color: darkmodeColor}}>No PDF selected</Text>
+          </View>
+        </>
       )}
+      {!pdfUri && !loading && <Text>No PDF selected</Text>}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          setModalVisible(!modalVisible);
+        }}>
+        <View style={styles.modalView}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setModalVisible(!modalVisible)}>
+            <Icon name="close" size={30} color="black" />
+          </TouchableOpacity>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter page number"
+            keyboardType="numeric"
+            value={searchText}
+            onChangeText={setSearchText}
+          />
+          <Button title="Go to page" onPress={handleSearch} />
+          <Button title="Share PDF" onPress={handleSharePdf} />
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -320,77 +207,62 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 16,
   },
-  toolbar: {
-    width: '100%',
-    padding: moderateScale(10),
-    backgroundColor: 'transparent',
-    position: 'absolute',
-    top: 0,
-    zIndex: 1,
+  header: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-  },
-  pdfContainer: {
-    flex: 1,
-    width: '100%',
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    padding: 8,
+    backgroundColor: '#f8f8f8',
+  },
+  pdfName: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   pdf: {
     flex: 1,
     width: '100%',
-    height: '80%',
+    height: '100%',
   },
-  pageInfo: {
-    fontSize: 16,
-    margin: 10,
-  },
-  actionButton: {
-    backgroundColor: 'transparent',
-    margin: 5,
-    padding: 10,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  buttonText: {
-    fontSize: 16,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  footer: {
+    padding: 8,
+    backgroundColor: '#f8f8f8',
+    width: '100%',
     alignItems: 'center',
+  },
+  iconButton: {
+    zIndex: 1,
   },
   modalView: {
-    width: '80%',
-    padding: 20,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: 'black',
+    marginTop: 60,
+    margin: 20,
     backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
   },
   input: {
-    width: '100%',
     height: 40,
     borderColor: 'gray',
     borderWidth: 1,
-    backgroundColor: 'white',
-    marginBottom: 10,
-    paddingHorizontal: 10,
-  },
-  openButton: {
-    backgroundColor: '#2196F3',
-    padding: 10,
-    borderRadius: 5,
-    margin: 5,
-  },
-  loading: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: [{translateX: -25}, {translateY: -25}],
+    marginBottom: 20,
+    paddingLeft: 10,
+    width: '80%',
   },
 });
 
