@@ -1,16 +1,14 @@
-import React, {useState, useRef} from 'react';
+import React, {useState} from 'react';
 import {
   StyleSheet,
   Text,
   View,
-  Button,
   Alert,
   ActivityIndicator,
   Platform,
   Modal,
   TouchableOpacity,
   TextInput,
-  Animated, // Import Animated
 } from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 import Pdf from 'react-native-pdf';
@@ -18,8 +16,24 @@ import RNFS from 'react-native-fs';
 import {PERMISSIONS, request, RESULTS} from 'react-native-permissions';
 import Icon from 'react-native-vector-icons/Ionicons';
 import Share from 'react-native-share';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSequence,
+} from 'react-native-reanimated';
+import {
+  moderateScale,
+  moderateVerticalScale,
+  scale,
+} from 'react-native-size-matters';
+import CustomButton from '../../components/CustomButton';
+import CustomHeader from '../../components/CustomHeader';
+import CustomTheme from '../../constants/CustomTheme';
+import CustomIcon from '../../components/CustomIcon';
+import Color from '../../constants/Color';
 
-const MyPdfScreen = () => {
+const MyPdfScreen = ({navigation}) => {
   const [pdfUri, setPdfUri] = useState(null);
   const [loading, setLoading] = useState(false);
   const [numberOfPages, setNumberOfPages] = useState(0);
@@ -30,7 +44,14 @@ const MyPdfScreen = () => {
   const [searchedPage, setSearchedPage] = useState(null);
   const [pdfName, setPdfName] = useState('');
 
-  const scaleAnim = useRef(new Animated.Value(1)).current; // Initialize animated value
+  const scaleAnim = useSharedValue(1);
+  const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{scale: scaleAnim.value}],
+    };
+  });
 
   // Request storage permission
   const requestStoragePermission = async () => {
@@ -54,18 +75,10 @@ const MyPdfScreen = () => {
 
   // Handle PDF selection with animation
   const handleChoosePdf = async () => {
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 1.2,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(); // Trigger the animation
+    scaleAnim.value = withSequence(
+      withTiming(1.2, {duration: 300}),
+      withTiming(1, {duration: 300}),
+    );
 
     const hasPermission = await requestStoragePermission();
     if (!hasPermission) {
@@ -124,22 +137,53 @@ const MyPdfScreen = () => {
     }
   };
 
+  const handleHeaderPress = () => {
+    Alert.alert(
+      'Close PDF',
+      'Are you sure you want to close this PDF?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Yes',
+          onPress: () => {
+            setPdfUri(null);
+            setPdfName('');
+          },
+        },
+      ],
+      {cancelable: true},
+    );
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
       {!pdfUri && (
-        <Animated.View style={{transform: [{scale: scaleAnim}]}}>
-          <Button title="Choose PDF" onPress={handleChoosePdf} />
+        <Animated.View style={[animatedStyle]}>
+          <CustomButton onPress={handleChoosePdf} text={'Choose PDF'} />
         </Animated.View>
       )}
-      {loading && <ActivityIndicator size="large" color="#0000ff" />}
+      {loading && <ActivityIndicator size="large" color={darkmodeColor} />}
       {pdfUri && !loading && (
         <>
-          <View style={styles.header}>
-            <Text style={styles.pdfName}>{pdfName}</Text>
+          <View style={[styles.header, {backgroundColor: darkBackgroundColor}]}>
+            <CustomHeader
+              iconName={'chevron-back'}
+              color={darkmodeColor}
+              onPress={handleHeaderPress}
+              text={pdfName}
+            />
+
             <TouchableOpacity
               style={styles.iconButton}
               onPress={() => setModalVisible(true)}>
-              <Icon name="ellipsis-vertical" size={30} color="black" />
+              <CustomIcon
+                color={darkmodeColor}
+                name={'ellipsis-vertical'}
+                size={scale(30)}
+              />
             </TouchableOpacity>
           </View>
           <Pdf
@@ -164,16 +208,18 @@ const MyPdfScreen = () => {
             }}
             page={searchedPage || 1}
             scale={1.0}
-            style={styles.pdf}
+            style={[styles.pdf, {backgroundColor: darkBackgroundColor}]}
           />
           <View style={styles.footer}>
-            <Text>
+            <Text style={{color: darkmodeColor}}>
               Page {currentPage} of {numberOfPages}
             </Text>
           </View>
         </>
       )}
-      {!pdfUri && !loading && <Text>No PDF selected</Text>}
+      {!pdfUri && !loading && (
+        <Text style={{color: darkmodeColor}}>No PDF selected</Text>
+      )}
       <Modal
         animationType="slide"
         transparent={true}
@@ -181,21 +227,45 @@ const MyPdfScreen = () => {
         onRequestClose={() => {
           setModalVisible(!modalVisible);
         }}>
-        <View style={styles.modalView}>
-          <TouchableOpacity
-            style={styles.closeButton}
-            onPress={() => setModalVisible(!modalVisible)}>
-            <Icon name="close" size={30} color="black" />
-          </TouchableOpacity>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter page number"
-            keyboardType="numeric"
-            value={searchText}
-            onChangeText={setSearchText}
-          />
-          <Button title="Go to page" onPress={handleSearch} />
-          <Button title="Share PDF" onPress={handleSharePdf} />
+        <View
+          style={[styles.modalBackground, {backgroundColor: 'transparent'}]}>
+          <View style={[styles.modalView, {backgroundColor: Color.BLACK_10}]}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalVisible(!modalVisible)}>
+              <Icon name="close" size={30} color={darkmodeColor} />
+            </TouchableOpacity>
+            <TextInput
+              style={[
+                styles.input,
+                {borderColor: darkBorderColor, color: darkmodeColor},
+              ]}
+              placeholder="Enter page number"
+              placeholderTextColor={darkBorderColor}
+              keyboardType="numeric"
+              value={searchText}
+              onChangeText={setSearchText}
+            />
+
+            <CustomButton
+              onPress={handleSearch}
+              text={'Go to page'}
+              inlineStyle={{
+                width: '80%',
+                backgroundColor: darkBackgroundColor,
+                height: moderateVerticalScale(60),
+              }}
+            />
+            <CustomButton
+              onPress={handleSharePdf}
+              text={'Share PDF'}
+              inlineStyle={{
+                width: '80%',
+                backgroundColor: darkBackgroundColor,
+                height: moderateVerticalScale(60),
+              }}
+            />
+          </View>
         </View>
       </Modal>
     </View>
@@ -207,62 +277,48 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    width: '100%',
-    padding: 8,
-    backgroundColor: '#f8f8f8',
-  },
-  pdfName: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    padding: moderateScale(8),
+    marginHorizontal: moderateScale(16),
   },
   pdf: {
     flex: 1,
     width: '100%',
-    height: '100%',
   },
   footer: {
-    padding: 8,
-    backgroundColor: '#f8f8f8',
-    width: '100%',
+    padding: moderateScale(8),
     alignItems: 'center',
   },
   iconButton: {
     zIndex: 1,
   },
-  modalView: {
-    marginTop: 60,
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
+  },
+  modalView: {
+    width: '80%',
+    borderRadius: moderateScale(8),
+    padding: moderateScale(40),
+    alignItems: 'center',
   },
   closeButton: {
     position: 'absolute',
-    top: 10,
-    right: 10,
+    top: moderateScale(10),
+    right: moderateScale(10),
   },
   input: {
-    height: 40,
-    borderColor: 'gray',
+    height: moderateVerticalScale(36),
     borderWidth: 1,
-    marginBottom: 20,
-    paddingLeft: 10,
-    width: '80%',
+    marginBottom: moderateVerticalScale(20),
+    paddingLeft: moderateScale(12),
+    width: '100%',
+    borderRadius: moderateScale(8),
   },
 });
 
