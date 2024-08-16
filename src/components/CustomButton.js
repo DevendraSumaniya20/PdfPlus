@@ -1,33 +1,60 @@
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, View} from 'react-native';
 import React from 'react';
+import Ripple from 'react-native-material-ripple';
 import {moderateScale, scale} from 'react-native-size-matters';
 import CustomTheme from '../constants/CustomTheme';
 
-const CustomButton = ({text, onPress, width, inlineStyle, textStyle}) => {
-  const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
+const CustomButton = ({
+  text,
+  onPress,
+  width,
+  inlineStyle,
+  textStyle,
+  disabled,
+}) => {
+  const {
+    darkmodeColor,
+    darkBackgroundColor,
+    darkBorderColor,
+    disabledBackgroundColor,
+    disabledTextColor,
+    disabledBorderColor,
+  } = CustomTheme();
+
+  const handlePress = () => {
+    if (!disabled && onPress) {
+      onPress();
+    }
+  };
+
   return (
-    <TouchableOpacity
-      onPress={onPress}
+    <Ripple
+      rippleColor={darkmodeColor}
+      onPress={handlePress}
+      rippleOpacity={0.7}
+      rippleDuration={1000}
       style={[
         styles.CustombuttonView,
         inlineStyle,
         {
-          backgroundColor: darkBackgroundColor,
-          borderColor: darkBorderColor,
+          backgroundColor: disabled
+            ? disabledBackgroundColor
+            : darkBackgroundColor,
+          borderColor: disabled ? disabledBorderColor : darkBorderColor,
         },
-      ]}>
+      ]}
+      disabled={disabled}>
       <Text
         style={[
           styles.textStyle,
           textStyle,
-
           {
-            color: darkmodeColor,
+            color: disabled ? disabledTextColor : darkmodeColor,
           },
         ]}>
         {text}
       </Text>
-    </TouchableOpacity>
+    </Ripple>
   );
 };
 

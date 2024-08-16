@@ -117,16 +117,35 @@ const PdfViewerScreen = ({route, navigation}) => {
       style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
       <View style={{flex: 1, marginHorizontal: moderateScale(16)}}>
         <View style={styles.toolbar}>
-          <View style={{marginLeft: moderateScale(-16)}}>
-            <CustomHeader
-              size={scale(24)}
-              iconName={'chevron-back'}
-              color={darkmodeColor}
-              onPress={() => {
-                navigation.goBack();
-              }}
-            />
-          </View>
+          <CustomHeader
+            text="PDF Viewer"
+            iconName="chevron-back"
+            size={scale(24)}
+            color={darkmodeColor}
+            onPress={() => {
+              navigation.goBack();
+            }}
+            onBackPress={() => {
+              Alert.alert(
+                'Confirm',
+                'Are you sure you want to go back? Your progress may be lost.',
+                [
+                  {
+                    text: 'Cancel',
+                    onPress: () => null, // Do nothing
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'Yes',
+                    onPress: () => {
+                      navigation.goBack();
+                    },
+                  },
+                ],
+                {cancelable: false},
+              );
+            }}
+          />
           <TouchableOpacity
             onPress={handleMenuPress}
             style={{marginRight: moderateScale(16)}}>

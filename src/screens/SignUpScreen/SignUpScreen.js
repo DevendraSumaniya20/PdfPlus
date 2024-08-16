@@ -47,6 +47,7 @@ const SignUpScreen = () => {
   const [imageError, setImageError] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedImage, setSelectedImage] = useState(ImagePath.LOGOBLACK);
+  const [isFormValid, setIsFormValid] = useState(false);
 
   const {darkmodeColor, darkBackgroundColor, darkBorderColor} = CustomTheme();
   const navigation = useNavigation();
@@ -400,7 +401,9 @@ const SignUpScreen = () => {
               <CustomButton
                 text={'Sign up'}
                 onPress={() => {
-                  handleSignUp();
+                  setTimeout(() => {
+                    handleSignUp();
+                  }, 2000);
                 }}
               />
             )}

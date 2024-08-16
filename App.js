@@ -1,13 +1,12 @@
-import {LogBox, SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import {LogBox, View} from 'react-native';
 import React, {useEffect} from 'react';
 import Navigation from './src/navigation/Navigation';
 import {Provider} from 'react-redux';
 import store from './src/redux/store';
 import SplashScreen from 'react-native-splash-screen';
+
 const App = () => {
-  LogBox.ignoreLogs([
-    'Warning: A props object containing a "key" prop is being spread into JSX:',
-  ]);
+  LogBox.ignoreAllLogs(true);
 
   useEffect(() => {
     SplashScreen.hide();

@@ -9,6 +9,7 @@ import {
   Modal,
   TouchableOpacity,
   TextInput,
+  SafeAreaView,
 } from 'react-native';
 import DocumentPicker from 'react-native-document-picker';
 import Pdf from 'react-native-pdf';
@@ -32,6 +33,7 @@ import CustomHeader from '../../components/CustomHeader';
 import CustomTheme from '../../constants/CustomTheme';
 import CustomIcon from '../../components/CustomIcon';
 import Color from '../../constants/Color';
+import Bubble from '../../animation/Bubble';
 
 const MyPdfScreen = ({navigation}) => {
   const [pdfUri, setPdfUri] = useState(null);
@@ -60,17 +62,13 @@ const MyPdfScreen = ({navigation}) => {
       console.log('Android Permission Result:', result);
       if (result !== RESULTS.GRANTED) {
         Alert.alert('Permission Denied', 'Cannot access storage on Android.');
+        return false;
       }
-      return result === RESULTS.GRANTED;
+      return true;
     } else if (Platform.OS === 'ios') {
-      const result = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
-      console.log('iOS Permission Result:', result);
-      if (result !== RESULTS.GRANTED) {
-        Alert.alert('Permission Denied', 'Cannot access media library on iOS.');
-      }
-      return result === RESULTS.GRANTED;
+      return true;
     }
-    return true;
+    return false;
   };
 
   // Handle PDF selection with animation
@@ -92,11 +90,19 @@ const MyPdfScreen = ({navigation}) => {
       });
 
       const fileUri = res[0].uri;
-      const destPath = `${RNFS.DocumentDirectoryPath}/${res[0].name}`;
+      const fileName = res[0].name;
+      const destPath = `${RNFS.DocumentDirectoryPath}/${fileName}`;
+
+      const fileExists = await RNFS.exists(destPath);
+
+      if (fileExists) {
+        await RNFS.unlink(destPath);
+      }
+
       await RNFS.copyFile(fileUri, destPath);
 
       setPdfUri(`file://${destPath}`);
-      setPdfName(res[0].name);
+      setPdfName(fileName);
       setLoading(false);
     } catch (err) {
       setLoading(false);
@@ -159,7 +165,13 @@ const MyPdfScreen = ({navigation}) => {
   };
 
   return (
-    <View style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
+    <SafeAreaView
+      style={[styles.container, {backgroundColor: darkBackgroundColor}]}>
+      <View style={styles.bubblesContainer}>
+        {[...Array(10)].map((_, index) => (
+          <Bubble key={index} index={index} />
+        ))}
+      </View>
       {!pdfUri && (
         <Animated.View style={[animatedStyle]}>
           <CustomButton onPress={handleChoosePdf} text={'Choose PDF'} />
@@ -173,7 +185,10 @@ const MyPdfScreen = ({navigation}) => {
               iconName={'chevron-back'}
               color={darkmodeColor}
               onPress={handleHeaderPress}
-              text={pdfName}
+              text={
+                pdfName.length > 16 ? pdfName.slice(0, 16) + '...' : pdfName
+              }
+              size={scale(20)}
             />
 
             <TouchableOpacity
@@ -248,27 +263,25 @@ const MyPdfScreen = ({navigation}) => {
             />
 
             <CustomButton
+              textStyle={{padding: moderateScale(1)}}
               onPress={handleSearch}
               text={'Go to page'}
               inlineStyle={{
-                width: '80%',
                 backgroundColor: darkBackgroundColor,
-                height: moderateVerticalScale(60),
+                padding: moderateScale(1),
               }}
             />
             <CustomButton
               onPress={handleSharePdf}
               text={'Share PDF'}
               inlineStyle={{
-                width: '80%',
                 backgroundColor: darkBackgroundColor,
-                height: moderateVerticalScale(60),
               }}
             />
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -282,8 +295,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: moderateScale(8),
+    // padding: moderateScale(8),
     marginHorizontal: moderateScale(16),
+    marginVertical: moderateVerticalScale(16),
   },
   pdf: {
     flex: 1,

@@ -12,8 +12,9 @@ const styles = StyleSheet.create({
   toolbar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: moderateScale(16),
+    marginHorizontal: moderateScale(8),
     justifyContent: 'space-between',
+    marginVertical: moderateVerticalScale(8),
   },
   pdf: {
     flex: 1,
